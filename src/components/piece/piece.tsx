@@ -49,11 +49,9 @@ export default class PieceComponent extends React.Component<
 
     render(): React.ReactNode {
         return (
-            <img
-                className="piece"
-                src={this.imgPathMap[this.state.name][this.state.color]}
-                alt={this.state.color + ' ' + this.state.name}
-            ></img>
+            <div
+                className={'piece ' + this.state.color + '-' + this.state.name}
+            ></div>
         );
     }
 }

@@ -1,11 +1,12 @@
 import { ChessColor, PieceName } from './enums';
+import { IPiece } from './piece';
 
 export function getInitialPosisitions(bottomColor: ChessColor) {
     let topColor =
         bottomColor === ChessColor.Light ? ChessColor.Dark : ChessColor.Light;
 
     const initial_piece_positions: {
-        [position: string]: { name: PieceName; color: ChessColor };
+        [position: string]: IPiece;
     } = {
         a1: { name: PieceName.Rook, color: bottomColor },
         b1: { name: PieceName.Knight, color: bottomColor },
