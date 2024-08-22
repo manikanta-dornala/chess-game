@@ -2,11 +2,12 @@
     background-image: image();
 } */
 
-.piece {
-    height: 90px;
-    width: 90px;
-    place-content: center;
-    background-size: 90px;
+.chess-piece {
+    height: 100px;
+    width: 100px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 80px;
 }
 
 .light-pawn {

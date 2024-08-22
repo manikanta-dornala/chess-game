@@ -3,52 +3,49 @@ import React from 'react';
 import './square.css';
 import { ChessColor } from '../../common/enums';
 import PieceComponent from '../piece/piece';
-import { getInitialPosisitions } from '../../common/initial-positions';
+import { IPiece } from '../../common/piece';
 
 interface ISquareProps {
-    squarePosition: string;
+    position: string;
     index: number;
+    piece: IPiece;
 }
 interface ISquareState {
-    squarePosition: string;
-    squareColor: ChessColor;
+    position: string;
+    color: ChessColor;
+    piece: IPiece;
 }
 export default class SquareComponent extends React.Component<
     ISquareProps,
     ISquareState
 > {
-    initialPositions = getInitialPosisitions(ChessColor.Light);
     constructor(props: ISquareProps) {
         super(props);
         this.state = {
-            squarePosition: props.squarePosition,
-            squareColor: getSquareColor(props.squarePosition),
+            position: props.position,
+            color: getSquareColor(props.position),
+            piece: props.piece,
         };
     }
 
     render(): React.ReactNode {
-        let id =
-            'board-square-' +
-            this.state.squarePosition +
-            '-' +
-            this.state.squareColor;
+        let id = 'board-square-' + this.state.position + '-' + this.state.color;
         let squareClass =
-            this.state.squareColor === ChessColor.Light
+            this.state.color === ChessColor.Light
                 ? 'lightSquare'
                 : 'darkSquare';
-        let txtClr =
-            this.state.squareColor === ChessColor.Light ? 'black' : 'white';
-        let piece = this.initialPositions[this.state.squarePosition];
+        let txtClr = this.state.color === ChessColor.Light ? 'black' : 'white';
+
         return (
             <div id={id}>
                 <span className="squareLabel" style={{ color: txtClr }}>
-                    {this.state.squarePosition}
+                    {this.state.position}
                 </span>
                 <div className={squareClass + ' boardSquare'}>
-                    {piece && (
+                    {this.state.piece && (
                         <PieceComponent
-                            name={piece.name}
-                            color={piece.color}
+                            name={this.state.piece.name}
+                            color={this.state.piece.color}
                         ></PieceComponent>
                     )}
                 </div>
