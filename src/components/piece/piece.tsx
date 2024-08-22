@@ -1,44 +1,59 @@
 import React from 'react';
-import { PieceType, ChessColor } from '../../common/enums';
-export default class Piece extends React.Component<
-    { type: PieceType; color: ChessColor },
-    { type: PieceType; color: ChessColor }
+import { PieceName, ChessColor } from '../../common/enums';
+
+import './piece.css';
+
+interface IPieceProps {
+    name: PieceName;
+    color: ChessColor;
+}
+interface IPieceState {
+    name: PieceName;
+    color: ChessColor;
+}
+export default class PieceComponent extends React.Component<
+    IPieceProps,
+    IPieceState
 > {
     imgPathMap = {
-        [PieceType.Pawn]: {
-            [ChessColor.Light]: '../assets/pawn_w.png',
-            [ChessColor.Dark]: '../assets/pawn_b.png',
+        [PieceName.Pawn]: {
+            [ChessColor.Light]: '../assets/white-pawn.png',
+            [ChessColor.Dark]: '../assets/black-pawn.png',
         },
-        [PieceType.Knight]: {
-            [ChessColor.Light]: 'assets/knight_w.png',
-            [ChessColor.Dark]: 'assets/knight_b.png',
+        [PieceName.Knight]: {
+            [ChessColor.Light]: '../assets/white-knight.png',
+            [ChessColor.Dark]: '../assets/black-knight.png',
         },
-        [PieceType.Bishop]: {
-            [ChessColor.Light]: 'assets/bishop_w.png',
-            [ChessColor.Dark]: 'assets/bishop_b.png',
+        [PieceName.Bishop]: {
+            [ChessColor.Light]: '../assets/white-bishop.png',
+            [ChessColor.Dark]: '../assets/black-bishop.png',
         },
-        [PieceType.Rook]: {
-            [ChessColor.Light]: 'assets/rook_w.png',
-            [ChessColor.Dark]: 'assets/rook_b.png',
+        [PieceName.Rook]: {
+            [ChessColor.Light]: '../assets/white-rook.png',
+            [ChessColor.Dark]: '../assets/black-rook.png',
         },
-        [PieceType.Queen]: {
-            [ChessColor.Light]: 'assets/queen_w.png',
-            [ChessColor.Dark]: 'assets/queen_b.png',
+        [PieceName.Queen]: {
+            [ChessColor.Light]: '../assets/white-queen.png',
+            [ChessColor.Dark]: '../assets/black-queen.png',
         },
-        [PieceType.King]: {
-            [ChessColor.Light]: 'assets/king_w.png',
-            [ChessColor.Dark]: 'assets/king_b.png',
+        [PieceName.King]: {
+            [ChessColor.Light]: '../assets/white-king.png',
+            [ChessColor.Dark]: '../assets/black-king.png',
         },
     };
 
-    constructor(props: { type: PieceType; color: ChessColor }) {
+    constructor(props: IPieceProps) {
         super(props);
         this.state = props;
     }
 
     render(): React.ReactNode {
         return (
-            <img src={this.imgPathMap[this.state.type][this.state.color]}></img>
+            <img
+                className="piece"
+                src={this.imgPathMap[this.state.name][this.state.color]}
+                alt={this.state.color + ' ' + this.state.name}
+            ></img>
         );
     }
 }

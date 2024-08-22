@@ -3,16 +3,15 @@
     place-content: center;
     height: 100px;
     width: 100px;
+    border: none;
 }
 
 .lightSquare {
-    background-color: white;
+    background-color: #ececd0;
 }
 
 .darkSquare {
-    height: 100px;
-    width: 100px;
-    background-color: black;
+    background-color: #779656;
 }
 
 .squareLabel {
