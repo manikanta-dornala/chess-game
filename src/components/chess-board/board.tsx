@@ -1,12 +1,12 @@
 import React from 'react';
 
-import './chess-board.css';
-import Square from './square/square';
+import './board.css';
+import Square from '../square/square';
 
 const xAxis = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const yAxis = ['1', '2', '3', '4', '5', '6', '7', '8'].reverse();
 
-export default class ChessBoard extends React.Component {
+export default class Board extends React.Component {
     constructor(props: any) {
         super(props);
         let boardState: Array<Array<any>> = [[]];
@@ -18,7 +18,6 @@ export default class ChessBoard extends React.Component {
             }
         }
         this.state = { boardState: boardState };
-        console.log(boardState);
     }
 
     render(): React.ReactNode {
@@ -28,7 +27,11 @@ export default class ChessBoard extends React.Component {
                 let position = xAxis[i] + yAxis[j];
 
                 squares.push(
-                    <Square position={position} key={position}></Square>
+                    <Square
+                        key={position}
+                        position={position}
+                        index={i + j}
+                    ></Square>
                 );
             }
         }
