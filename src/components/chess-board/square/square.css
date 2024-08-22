@@ -1,21 +1,21 @@
 .boardSquare {
-  display: grid;
-  place-content: center;
-  height: 100px;
-  width: 100px;
+    display: grid;
+    place-content: center;
+    height: 100px;
+    width: 100px;
 }
 
 .lightSquare {
-  background-color: white;
+    background-color: white;
 }
 
 .darkSquare {
-  height: 100px;
-  width: 100px;
-  background-color: black;
+    height: 100px;
+    width: 100px;
+    background-color: black;
 }
 
 .squareLabel {
-  display: block;
-  position: absolute;
+    display: block;
+    position: absolute;
 }
