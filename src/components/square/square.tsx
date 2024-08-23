@@ -2,15 +2,13 @@ import React from 'react';
 
 import './square.css';
 import { ChessColor } from '../../common/enums';
-// import PieceComponent from '../piece/piece';
-import { IPiece } from '../../common/piece';
-import { BoardState, getPieceAtPosition } from '../../common/game';
+import { GameState } from '../../common/game';
 import PieceComponent from '../piece/piece';
 
 interface ISquareProps {
     position: string;
     // index: number;
-    boardState: BoardState;
+    gameState: GameState;
 }
 interface ISquareState {
     position: string;
@@ -36,9 +34,8 @@ export default class SquareComponent extends React.Component<
                 : 'darkSquare';
         let txtClr = this.state.color === ChessColor.Light ? 'black' : 'white';
 
-        const piece = getPieceAtPosition(
-            this.props.position,
-            this.props.boardState
+        const piece = this.props.gameState.getPieceAtPosition(
+            this.props.position
         );
         let piececomp = <div></div>;
         if (piece !== null && piece !== undefined) {
@@ -50,7 +47,7 @@ export default class SquareComponent extends React.Component<
             );
         }
         return (
-            <div>
+            <div id={id}>
                 <span className="squareLabel" style={{ color: txtClr }}>
                     {this.state.position}
                 </span>

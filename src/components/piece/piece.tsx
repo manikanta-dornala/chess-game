@@ -9,10 +9,6 @@ interface IPieceProps {
 }
 
 export default class PieceComponent extends React.Component<IPieceProps> {
-    constructor(props: IPieceProps) {
-        super(props);
-    }
-
     render(): React.ReactNode {
         return (
             <div

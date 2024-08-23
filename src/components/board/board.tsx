@@ -2,10 +2,10 @@ import React from 'react';
 
 import './board.css';
 import SquareComponent from '../square/square';
-import { BoardState, xAxis, yAxis } from '../../common/game';
+import { GameState, xAxis, yAxis } from '../../common/game';
 
 export default class BoardComponent extends React.Component<{
-    boardState: BoardState;
+    gameState: GameState;
 }> {
     render(): React.ReactNode {
         let squares = [];
@@ -16,7 +16,7 @@ export default class BoardComponent extends React.Component<{
                     <SquareComponent
                         key={position}
                         position={position}
-                        boardState={this.props.boardState}
+                        gameState={this.props.gameState}
                     ></SquareComponent>
                 );
             }

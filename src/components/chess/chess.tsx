@@ -1,35 +1,28 @@
 import React, { createRef } from 'react';
 import BoardComponent from '../board/board';
-import {
-    BoardState,
-    cloneBoardState,
-    getPieceAtPosition,
-} from '../../common/game';
-import { ChessColor, PieceName } from '../../common/enums';
+import { GameState } from '../../common/game';
+import { ChessColor } from '../../common/enums';
 
-export default class ChessComponent extends React.Component<{}, BoardState> {
+export default class ChessComponent extends React.Component {
     private boardRef = createRef<HTMLDivElement>();
     grabbedPiece: any = null;
     grabbedPieceInitialPosition: string = '';
+    gameState: GameState;
     constructor(props: any) {
         super(props);
-        const boardState = new BoardState(ChessColor.Light);
-        this.state = boardState;
+        this.gameState = new GameState(ChessColor.Light);
     }
 
     render(): React.ReactNode {
         return (
             <div
                 id="chess-game"
-                // onMouseDown={(e) => this.grabPiece(e)}
-                // onMouseMove={(e) => this.movePiece(e)}
-                // onMouseUp={(e) => this.dropPiece(e)}
                 onDragOver={(e) => e.preventDefault()}
                 onDragEnd={(e) => this.dropPiece(e)}
                 onDragStart={(e) => this.grabPiece(e)}
                 ref={this.boardRef}
             >
-                <BoardComponent boardState={this.state}></BoardComponent>
+                <BoardComponent gameState={this.gameState}></BoardComponent>
             </div>
         );
     }
@@ -40,22 +33,15 @@ export default class ChessComponent extends React.Component<{}, BoardState> {
             (this.grabbedPiece === null || this.grabbedPiece === undefined) &&
             currelm.classList.contains('chess-piece')
         ) {
-            // const elm = new HTMLDivElement();
-            // elm.style.position = 'absolute';
-            // elm.style.left = `${this.boundX(e.clientX)}px`;
-            // elm.style.top = `${this.boundY(e.clientY)}px`;
             this.grabbedPieceInitialPosition = this.getPositionAtCoord(
                 this.boundX(e.clientX),
                 this.boundY(e.clientY)
             );
-            const piece = getPieceAtPosition(
-                this.grabbedPieceInitialPosition,
-                this.state
+            const piece = this.gameState.getPieceAtPosition(
+                this.grabbedPieceInitialPosition
             );
 
             this.grabbedPiece = piece;
-
-            // this.grabbedPiece = elm;
         }
     }
 
@@ -71,19 +57,17 @@ export default class ChessComponent extends React.Component<{}, BoardState> {
                 ),
             };
 
-            console.log(move);
-
             if (move.initial !== move.final) {
-                const initial = this.state.coordinateMap[move.initial];
-                const final = this.state.coordinateMap[move.final];
+                const initial = this.gameState.coordinateMap[move.initial];
+                const final = this.gameState.coordinateMap[move.final];
 
-                // const newBoardState: BoardState = this.state;
-                let initialState = this.state.map[initial[0]][initial[1]];
-                let finalState = this.state.map[final[0]][final[1]];
+                // const newBoardState: BoardState = this.gameState;
+                let initialState = this.gameState.map[initial[0]][initial[1]];
+                let finalState = this.gameState.map[final[0]][final[1]];
                 finalState.piece = initialState.piece;
                 initialState.piece = undefined;
 
-                this.setState((prev) => this.state);
+                this.setState((prev) => this.gameState);
             }
 
             this.grabbedPiece = null;
@@ -112,6 +96,6 @@ export default class ChessComponent extends React.Component<{}, BoardState> {
 
         let i = Math.floor((x - minX) / 100);
         let j = Math.floor((y - minY) / 100);
-        return this.state.map[j][i].position;
+        return this.gameState.map[j][i].position;
     }
 }

@@ -4,7 +4,7 @@ import { IPiece } from './piece';
 export const xAxis = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 export const yAxis = ['1', '2', '3', '4', '5', '6', '7', '8'].reverse();
 
-export class BoardState {
+export class GameState {
     coordinateMap: { [name: string]: [number, number] } = {};
     map: Array<Array<{ position: string; piece?: IPiece }>> = [];
     bottomColor: ChessColor;
@@ -68,20 +68,13 @@ export class BoardState {
         };
         return initial_piece_positions;
     }
-}
 
-export function cloneBoardState(curr: BoardState) {
-    const cloned = new BoardState(curr.bottomColor);
-    cloned.coordinateMap = structuredClone(curr.coordinateMap);
-    cloned.map = structuredClone(curr.map);
-    return cloned;
-}
-
-export function getPieceAtPosition(position: string, boardState: BoardState) {
-    const pos = boardState.coordinateMap[position];
-    const i = pos[0];
-    const j = pos[1];
-    const piece = boardState.map[i][j].piece;
-    if (piece !== null && piece !== undefined) return piece;
-    return null;
+    getPieceAtPosition(position: string) {
+        const pos = this.coordinateMap[position];
+        const i = pos[0];
+        const j = pos[1];
+        const piece = this.map[i][j].piece;
+        if (piece !== null && piece !== undefined) return piece;
+        return null;
+    }
 }
