@@ -2,18 +2,19 @@ import React from 'react';
 
 import './square.css';
 import { ChessColor } from '../../common/enums';
-import PieceComponent from '../piece/piece';
+// import PieceComponent from '../piece/piece';
 import { IPiece } from '../../common/piece';
+import { BoardState, getPieceAtPosition } from '../../common/game';
+import PieceComponent from '../piece/piece';
 
 interface ISquareProps {
     position: string;
-    index: number;
-    piece: IPiece;
+    // index: number;
+    boardState: BoardState;
 }
 interface ISquareState {
     position: string;
     color: ChessColor;
-    piece: IPiece;
 }
 export default class SquareComponent extends React.Component<
     ISquareProps,
@@ -24,7 +25,6 @@ export default class SquareComponent extends React.Component<
         this.state = {
             position: props.position,
             color: getSquareColor(props.position),
-            piece: props.piece,
         };
     }
 
@@ -36,19 +36,25 @@ export default class SquareComponent extends React.Component<
                 : 'darkSquare';
         let txtClr = this.state.color === ChessColor.Light ? 'black' : 'white';
 
+        const piece = getPieceAtPosition(
+            this.props.position,
+            this.props.boardState
+        );
+        let piececomp = <div></div>;
+        if (piece !== null && piece !== undefined) {
+            piececomp = (
+                <PieceComponent
+                    name={piece.name}
+                    color={piece.color}
+                ></PieceComponent>
+            );
+        }
         return (
-            <div id={id}>
+            <div>
                 <span className="squareLabel" style={{ color: txtClr }}>
                     {this.state.position}
                 </span>
-                <div className={squareClass + ' boardSquare'}>
-                    {this.state.piece && (
-                        <PieceComponent
-                            name={this.state.piece.name}
-                            color={this.state.piece.color}
-                        ></PieceComponent>
-                    )}
-                </div>
+                <div className={squareClass + ' boardSquare '}>{piececomp}</div>
             </div>
         );
     }

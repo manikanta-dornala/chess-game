@@ -1,10 +1,10 @@
 import React from 'react';
 import './App.css';
-import BoardComponent from './components/chess-board/board';
+import ChessComponent from './components/chess/chess';
 function App() {
     return (
         <div className="Chess">
-            <BoardComponent></BoardComponent>
+            <ChessComponent></ChessComponent>
         </div>
     );
 }

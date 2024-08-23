@@ -1,13 +1,10 @@
-/* .pawn {
-    background-image: image();
-} */
-
 .chess-piece {
     height: 100px;
     width: 100px;
     background-position: center;
     background-repeat: no-repeat;
     background-size: 80px;
+    z-index: 10;
 }
 
 .light-pawn {

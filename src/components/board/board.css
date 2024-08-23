@@ -1,4 +1,4 @@
-#board {
+.board {
     display: grid;
     background-color: black;
     width: 801px;
