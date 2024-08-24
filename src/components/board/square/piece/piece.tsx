@@ -1,5 +1,5 @@
 import React from 'react';
-import { PieceName, ChessColor } from '../../common/enums';
+import { PieceName, ChessColor } from '../../../../common/enums';
 
 import './piece.css';
 

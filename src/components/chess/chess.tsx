@@ -1,39 +1,73 @@
 import React, { createRef } from 'react';
 import BoardComponent from '../board/board';
-import { GameState, getCoordToPosition } from '../../common/game';
-import { ChessColor } from '../../common/enums';
+import { BoardCoordinateSystem, GameState, IMove } from '../../common/game';
 import { IPiece } from '../../common/piece';
+import { ChessColor } from '../../common/enums';
+
+import './chess.css';
 
 export default class ChessComponent extends React.Component {
     private boardRef = createRef<HTMLDivElement>();
     grabbedPiece: IPiece | null = null;
-    grabbedPieceInitialPosition: string = '';
+    grabbedPieceCurrPosition: string = '';
     gameState: GameState;
     highlightPositions: Array<string> = [];
     grabbedElm: HTMLElement | null = null;
+    bottomColor = ChessColor.Light;
     constructor(props: any) {
         super(props);
-        this.gameState = new GameState(ChessColor.Light);
+        this.gameState = new GameState();
     }
 
     render(): React.ReactNode {
         return (
-            <div
-                id="chess-game"
-                onDragOver={(e) => e.preventDefault()}
-                onDragEnd={(e) => this.dropPiece(e)}
-                onDragStart={(e) => this.grabPiece(e)}
-                onDrag={(e) => {
-                    if (this.grabbedElm) {
-                        this.grabbedElm.style.display = 'none';
-                    }
-                }}
-                ref={this.boardRef}
-            >
-                <BoardComponent
-                    gameState={this.gameState}
-                    highlightPositions={this.highlightPositions}
-                ></BoardComponent>
+            <div className="container">
+                <div className="chess-container">
+                    <div
+                        id="chess-game"
+                        onDragOver={(e) => e.preventDefault()}
+                        onDragEnd={(e) => this.dropPiece(e)}
+                        onDragStart={(e) => this.grabPiece(e)}
+                        onDrag={(e) => {
+                            if (this.grabbedElm) {
+                                this.grabbedElm.style.display = 'none';
+                            }
+                        }}
+                        ref={this.boardRef}
+                    >
+                        <BoardComponent
+                            gameState={this.gameState}
+                            highlightPositions={this.highlightPositions}
+                            bottomColor={this.bottomColor}
+                        ></BoardComponent>
+                    </div>
+                </div>
+                <div className="info">
+                    <button
+                        onClick={(e) => {
+                            this.bottomColor =
+                                this.bottomColor === ChessColor.Light
+                                    ? ChessColor.Dark
+                                    : ChessColor.Light;
+                            this.forceUpdate();
+                        }}
+                    >
+                        Flip Board
+                    </button>
+                    <p>Current turn {this.gameState.turn}</p>
+                    {this.gameState.moves.length ? <p>Moves</p> : ''}
+                    <ul>
+                        {this.gameState.moves.map((move: IMove) => {
+                            return (
+                                <li>
+                                    {move.position} {move.piece.color}{' '}
+                                    {move.piece.name} {move.type.toLowerCase()}{' '}
+                                    {move.target}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
             </div>
         );
     }
@@ -48,7 +82,7 @@ export default class ChessComponent extends React.Component {
                 this.boundX(e.clientX),
                 this.boundY(e.clientY)
             );
-            const piece = this.gameState.squares[position];
+            const piece = this.gameState.board[position];
 
             if (piece) {
                 this.highlightPositions = this.gameState.getPossibleTargets(
@@ -58,7 +92,7 @@ export default class ChessComponent extends React.Component {
                 this.grabbedPiece = piece;
                 this.forceUpdate();
                 this.grabbedElm = currelm;
-                this.grabbedPieceInitialPosition = position;
+                this.grabbedPieceCurrPosition = position;
             }
         }
     }
@@ -68,13 +102,13 @@ export default class ChessComponent extends React.Component {
             if (this.grabbedElm) {
                 this.grabbedElm.style.display = 'block';
             }
-            const initialPosition = this.grabbedPieceInitialPosition;
-            const finalPosition = this.getPositionAtCoord(
+            const currPosition = this.grabbedPieceCurrPosition;
+            const targetPosition = this.getPositionAtCoord(
                 this.boundX(e.clientX),
                 this.boundY(e.clientY)
             );
 
-            this.gameState.makeMove(initialPosition, finalPosition);
+            this.gameState.makeMove(currPosition, targetPosition);
 
             this.grabbedPiece = null;
             this.highlightPositions = [];
@@ -104,6 +138,10 @@ export default class ChessComponent extends React.Component {
 
         let i = Math.floor((x - minX) / 100);
         let j = Math.floor((y - minY) / 100);
-        return getCoordToPosition({ rankIndex: j, fileIndex: i });
+        return BoardCoordinateSystem.getCoordToPosition({
+            rankIndex: j,
+            fileIndex: i,
+            bottomColor: this.bottomColor,
+        });
     }
 }

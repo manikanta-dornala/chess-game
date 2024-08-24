@@ -3,6 +3,8 @@ export enum ChessColor {
     Dark = 'dark',
 }
 
+export enum BS {}
+
 export enum PieceName {
     Pawn = 'pawn',
     Knight = 'knight',
@@ -20,5 +22,6 @@ export enum ChessDirection {
 export enum MoveType {
     Move = 'move',
     Capture = 'capture',
+    EnPassant = 'en passant',
     Promote = 'promote',
 }

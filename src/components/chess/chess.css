@@ -4,3 +4,21 @@
     width: 801px;
     height: 801px;
 }
+
+.container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    height: 100vh;
+    place-content: center;
+}
+
+.chess-container {
+    display: grid;
+    place-content: center;
+    grid-column-start: 1;
+    grid-column-end: 4;
+}
+
+.info {
+    grid-column-start: 4;
+}

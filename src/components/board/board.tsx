@@ -1,18 +1,24 @@
 import React from 'react';
 
 import './board.css';
-import SquareComponent from '../square/square';
-import { GameState, chessFiles, chessRanks } from '../../common/game';
+import { BoardCoordinateSystem, GameState } from '../../common/game';
+import { ChessColor } from '../../common/enums';
+import SquareComponent from './square/square';
 
 export default class BoardComponent extends React.Component<{
     gameState: GameState;
+    bottomColor: ChessColor;
     highlightPositions: Array<string>;
 }> {
     render(): React.ReactNode {
         let squares = [];
-        for (let j = 0; j < chessRanks.length; j++) {
-            for (let i = 0; i < chessFiles.length; i++) {
-                let position = chessFiles[i] + chessRanks[j];
+        for (let j = 0; j < BoardCoordinateSystem.ranks.length; j++) {
+            for (let i = 0; i < BoardCoordinateSystem.files.length; i++) {
+                let position = BoardCoordinateSystem.getCoordToPosition({
+                    rankIndex: j,
+                    fileIndex: i,
+                    bottomColor: this.props.bottomColor,
+                });
                 squares.push(
                     <SquareComponent
                         key={position}

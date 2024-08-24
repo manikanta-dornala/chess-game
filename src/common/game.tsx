@@ -1,136 +1,131 @@
 import { ChessColor, ChessDirection, MoveType, PieceName } from './enums';
 import { IPiece } from './piece';
 
-export const chessFiles = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-export const chessRanks = ['1', '2', '3', '4', '5', '6', '7', '8'].reverse();
+export abstract class BoardCoordinateSystem {
+    public static files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    public static ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
 
-export function getCoordToPosition({
-    rankIndex,
-    fileIndex,
-}: {
-    rankIndex: number;
-    fileIndex: number;
-}) {
-    return chessFiles[fileIndex] + chessRanks[rankIndex];
+    public static getCoordToPosition({
+        rankIndex,
+        fileIndex,
+        bottomColor,
+    }: {
+        rankIndex: number;
+        fileIndex: number;
+        bottomColor: ChessColor;
+    }) {
+        if (bottomColor === ChessColor.Light)
+            return this.files[fileIndex] + this.ranks[rankIndex];
+        else {
+            const pos = this.files[7 - fileIndex] + this.ranks[7 - rankIndex];
+            return pos;
+        }
+    }
 }
 
-interface IMove {
+export interface IMove {
     target: string;
     type: MoveType;
+    piece: IPiece;
+    position: string;
 }
 
 export class GameState {
-    squares: { [position: string]: IPiece | null };
-    bottomColor: ChessColor;
+    board: { [position: string]: IPiece | null };
     turn: ChessColor = ChessColor.Light;
     direction = {
         [ChessColor.Light]: ChessDirection.Up,
         [ChessColor.Dark]: ChessDirection.Down,
     };
     validSquares: Set<string> = new Set();
-    constructor(bottomColor: ChessColor) {
-        this.bottomColor = bottomColor;
-        let initialPositions = this.getInitialPositions(bottomColor);
-        this.squares = {};
-        for (let j = 0; j < chessRanks.length; j++) {
-            for (let i = 0; i < chessFiles.length; i++) {
-                let position = chessFiles[i] + chessRanks[j];
-                this.squares[position] = initialPositions[position]
+    moves: Array<IMove> = [];
+    constructor() {
+        let initialPositions = this.getInitialPositions();
+        this.board = {};
+        for (let j = 0; j < BoardCoordinateSystem.ranks.length; j++) {
+            for (let i = 0; i < BoardCoordinateSystem.files.length; i++) {
+                let position =
+                    BoardCoordinateSystem.files[i] +
+                    BoardCoordinateSystem.ranks[j];
+                this.board[position] = initialPositions[position]
                     ? initialPositions[position]
                     : null;
                 this.validSquares.add(position);
             }
         }
-        this.direction = {
-            [ChessColor.Light]:
-                bottomColor === ChessColor.Light
-                    ? ChessDirection.Up
-                    : ChessDirection.Down,
-            [ChessColor.Dark]:
-                bottomColor === ChessColor.Light
-                    ? ChessDirection.Down
-                    : ChessDirection.Up,
-        };
     }
 
-    getInitialPositions(bottomColor: ChessColor) {
-        let topColor =
-            bottomColor === ChessColor.Light
-                ? ChessColor.Dark
-                : ChessColor.Light;
-
+    getInitialPositions() {
         const initial_piece_positions: {
             [position: string]: IPiece;
         } = {
-            a1: { name: PieceName.Rook, color: bottomColor },
-            b1: { name: PieceName.Knight, color: bottomColor },
-            c1: { name: PieceName.Bishop, color: bottomColor },
-            d1: { name: PieceName.Queen, color: bottomColor },
-            e1: { name: PieceName.King, color: bottomColor },
-            f1: { name: PieceName.Bishop, color: bottomColor },
-            g1: { name: PieceName.Knight, color: bottomColor },
-            h1: { name: PieceName.Rook, color: bottomColor },
-            a2: { name: PieceName.Pawn, color: bottomColor },
-            b2: { name: PieceName.Pawn, color: bottomColor },
-            c2: { name: PieceName.Pawn, color: bottomColor },
-            d2: { name: PieceName.Pawn, color: bottomColor },
-            e2: { name: PieceName.Pawn, color: bottomColor },
-            f2: { name: PieceName.Pawn, color: bottomColor },
-            g2: { name: PieceName.Pawn, color: bottomColor },
-            h2: { name: PieceName.Pawn, color: bottomColor },
-            a7: { name: PieceName.Pawn, color: topColor },
-            b7: { name: PieceName.Pawn, color: topColor },
-            c7: { name: PieceName.Pawn, color: topColor },
-            d7: { name: PieceName.Pawn, color: topColor },
-            e7: { name: PieceName.Pawn, color: topColor },
-            f7: { name: PieceName.Pawn, color: topColor },
-            g7: { name: PieceName.Pawn, color: topColor },
-            h7: { name: PieceName.Pawn, color: topColor },
-            a8: { name: PieceName.Rook, color: topColor },
-            b8: { name: PieceName.Knight, color: topColor },
-            c8: { name: PieceName.Bishop, color: topColor },
-            d8: { name: PieceName.Queen, color: topColor },
-            e8: { name: PieceName.King, color: topColor },
-            f8: { name: PieceName.Bishop, color: topColor },
-            g8: { name: PieceName.Knight, color: topColor },
-            h8: { name: PieceName.Rook, color: topColor },
+            a1: { name: PieceName.Rook, color: ChessColor.Light },
+            b1: { name: PieceName.Knight, color: ChessColor.Light },
+            c1: { name: PieceName.Bishop, color: ChessColor.Light },
+            d1: {
+                name: PieceName.Queen,
+                color: ChessColor.Light,
+            },
+            e1: {
+                name: PieceName.King,
+                color: ChessColor.Light,
+            },
+            f1: { name: PieceName.Bishop, color: ChessColor.Light },
+            g1: { name: PieceName.Knight, color: ChessColor.Light },
+            h1: { name: PieceName.Rook, color: ChessColor.Light },
+            a2: { name: PieceName.Pawn, color: ChessColor.Light },
+            b2: { name: PieceName.Pawn, color: ChessColor.Light },
+            c2: { name: PieceName.Pawn, color: ChessColor.Light },
+            d2: { name: PieceName.Pawn, color: ChessColor.Light },
+            e2: { name: PieceName.Pawn, color: ChessColor.Light },
+            f2: { name: PieceName.Pawn, color: ChessColor.Light },
+            g2: { name: PieceName.Pawn, color: ChessColor.Light },
+            h2: { name: PieceName.Pawn, color: ChessColor.Light },
+            a7: { name: PieceName.Pawn, color: ChessColor.Dark },
+            b7: { name: PieceName.Pawn, color: ChessColor.Dark },
+            c7: { name: PieceName.Pawn, color: ChessColor.Dark },
+            d7: { name: PieceName.Pawn, color: ChessColor.Dark },
+            e7: { name: PieceName.Pawn, color: ChessColor.Dark },
+            f7: { name: PieceName.Pawn, color: ChessColor.Dark },
+            g7: { name: PieceName.Pawn, color: ChessColor.Dark },
+            h7: { name: PieceName.Pawn, color: ChessColor.Dark },
+            a8: { name: PieceName.Rook, color: ChessColor.Dark },
+            b8: { name: PieceName.Knight, color: ChessColor.Dark },
+            c8: { name: PieceName.Bishop, color: ChessColor.Dark },
+            d8: {
+                name: PieceName.Queen,
+                color: ChessColor.Dark,
+            },
+            e8: {
+                name: PieceName.King,
+                color: ChessColor.Dark,
+            },
+            f8: { name: PieceName.Bishop, color: ChessColor.Dark },
+            g8: { name: PieceName.Knight, color: ChessColor.Dark },
+            h8: { name: PieceName.Rook, color: ChessColor.Dark },
         };
         return initial_piece_positions;
     }
 
-    makeMove(initialPosition: string, finalPosition: string) {
-        if (!this.isMoveLegal(initialPosition, finalPosition)) return;
-        const piece = this.squares[initialPosition];
-        this.squares[finalPosition] = piece;
-        this.squares[initialPosition] = null;
-        this.turn =
-            this.turn === ChessColor.Light ? ChessColor.Dark : ChessColor.Light;
-    }
+    makeMove(curr: string, target: string) {
+        const currPiece = this.board[curr];
+        if (!currPiece) return; // no piece to move
 
-    isMoveLegal(initialPosition: string, finalPosition: string): boolean {
-        if (initialPosition === finalPosition) return false;
-
-        const currPiece = this.squares[initialPosition];
-        if (!currPiece) {
-            // there is no piece on this square
-            return false;
-        }
-        if (currPiece.color !== this.turn) {
-            // Not your turn
-            return false;
-        }
-        const destPiece = this.squares[finalPosition];
-        if (destPiece && destPiece.color === currPiece?.color) {
-            // cannot eat pieces of own color
-            return false;
-        }
-        const possibleTargets = this.getPossibleTargets(
-            currPiece,
-            initialPosition
+        // check if there's any move that can land curr piece in target
+        const moves = this.getPossibleMoves(currPiece, curr).filter(
+            (move) => move.target === target
         );
-        if (possibleTargets.includes(finalPosition)) return true;
 
-        return false;
+        if (moves.length) {
+            const move = moves[0];
+            this.board[target] = currPiece;
+            this.board[curr] = null;
+            this.turn =
+                this.turn === ChessColor.Light
+                    ? ChessColor.Dark
+                    : ChessColor.Light;
+            this.moves.push(move);
+        }
     }
 
     getPossibleTargets(piece: IPiece, position: string): Array<string> {
@@ -140,12 +135,12 @@ export class GameState {
     getPossibleMoves(piece: IPiece, position: string): Array<IMove> {
         if (this.turn !== piece.color) return [];
         if (piece.name === PieceName.Pawn) {
-            return this.getPawnMoves(position);
+            return this.getPawnMoves(piece, position);
         }
         return [];
     }
 
-    getPawnMoves(position: string): Array<IMove> {
+    getPawnMoves(piece: IPiece, position: string): Array<IMove> {
         const file = position[0];
         const rank = position[1];
         const moves: Set<IMove> = new Set();
@@ -158,6 +153,8 @@ export class GameState {
         moves.add({
             target: file + (parseInt(rank) + moveAdd),
             type: MoveType.Move,
+            piece: piece,
+            position: position,
         });
 
         // if at base, pawn can move two steps forward
@@ -165,28 +162,48 @@ export class GameState {
             moves.add({
                 target: file + (parseInt(rank) + moveAdd + moveAdd),
                 type: MoveType.Move,
+                piece: piece,
+                position: position,
             });
         }
 
-        const kill_pos = [
-            String.fromCharCode(file.charCodeAt(0) - 1) +
-                (parseInt(rank) + moveAdd), // left diagnol
-            String.fromCharCode(file.charCodeAt(0) + 1) +
-                (parseInt(rank) + moveAdd), // right diagnol
-        ];
-
-        kill_pos.forEach((pos) => {
-            const pieceAtPos = this.squares[pos];
-            if (pieceAtPos && pieceAtPos.color !== this.turn) {
-                moves.add({
-                    target: pos,
-                    type: MoveType.Capture,
-                });
-            }
+        moves.add({
+            target:
+                String.fromCharCode(file.charCodeAt(0) - 1) +
+                (parseInt(rank) + moveAdd), // left diagnol,
+            type: MoveType.Capture,
+            piece: piece,
+            position: position,
         });
 
-        return Array.from(moves).filter((move) =>
-            this.validSquares.has(move.target)
-        );
+        moves.add({
+            target:
+                String.fromCharCode(file.charCodeAt(0) + 1) +
+                (parseInt(rank) + moveAdd), // right diagnol
+            type: MoveType.Capture,
+            piece: piece,
+            position: position,
+        });
+
+        const validMoves = Array.from(moves).filter((move) => {
+            // target has to be a chess square
+            if (!this.validSquares.has(move.target)) return false;
+
+            const pieceAtTarget = this.board[move.target];
+            // Check if there are no pieces at final pos when moving
+            if (move.type === MoveType.Move && !pieceAtTarget) {
+                return true;
+            }
+
+            //Check if its enemy when capturing
+            if (move.type === MoveType.Capture) {
+                if (!pieceAtTarget) return false;
+                if (pieceAtTarget.color !== this.turn) return true;
+            }
+
+            return false;
+        });
+
+        return validMoves;
     }
 }

@@ -1,9 +1,9 @@
 import React from 'react';
 
 import './square.css';
-import { ChessColor } from '../../common/enums';
-import { GameState } from '../../common/game';
-import PieceComponent from '../piece/piece';
+import { GameState } from '../../../common/game';
+import { ChessColor } from '../../../common/enums';
+import PieceComponent from './piece/piece';
 
 interface ISquareProps {
     position: string;
@@ -35,7 +35,7 @@ export default class SquareComponent extends React.Component<
                 : 'darkSquare';
         let txtClr = this.state.color === ChessColor.Light ? 'black' : 'white';
 
-        const piece = this.props.gameState.squares[this.props.position];
+        const piece = this.props.gameState.board[this.props.position];
         let piececomp = <div></div>;
         if (piece !== null && piece !== undefined) {
             piececomp = (
