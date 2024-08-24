@@ -35,9 +35,7 @@ export default class SquareComponent extends React.Component<
                 : 'darkSquare';
         let txtClr = this.state.color === ChessColor.Light ? 'black' : 'white';
 
-        const piece = this.props.gameState.getPieceAtPosition(
-            this.props.position
-        );
+        const piece = this.props.gameState.squares[this.props.position];
         let piececomp = <div></div>;
         if (piece !== null && piece !== undefined) {
             piececomp = (

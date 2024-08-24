@@ -1,6 +1,6 @@
 import React, { createRef } from 'react';
 import BoardComponent from '../board/board';
-import { GameState } from '../../common/game';
+import { GameState, getCoordToPosition } from '../../common/game';
 import { ChessColor } from '../../common/enums';
 import { IPiece } from '../../common/piece';
 
@@ -44,21 +44,21 @@ export default class ChessComponent extends React.Component {
             (this.grabbedPiece === null || this.grabbedPiece === undefined) &&
             currelm.classList.contains('chess-piece')
         ) {
-            this.grabbedPieceInitialPosition = this.getPositionAtCoord(
+            const position = this.getPositionAtCoord(
                 this.boundX(e.clientX),
                 this.boundY(e.clientY)
             );
-            const piece = this.gameState.getPieceAtPosition(
-                this.grabbedPieceInitialPosition
-            );
+            const piece = this.gameState.squares[position];
+
             if (piece) {
                 this.highlightPositions = this.gameState.getPossibleMoves(
                     piece,
-                    this.grabbedPieceInitialPosition
+                    position
                 );
                 this.grabbedPiece = piece;
                 this.forceUpdate();
                 this.grabbedElm = currelm;
+                this.grabbedPieceInitialPosition = position;
             }
         }
     }
@@ -70,17 +70,14 @@ export default class ChessComponent extends React.Component {
             if (this.grabbedElm) {
                 this.grabbedElm.style.display = 'block';
             }
-            const move = {
-                initialPosition: this.grabbedPieceInitialPosition,
-                finalPosition: this.getPositionAtCoord(
-                    this.boundX(e.clientX),
-                    this.boundY(e.clientY)
-                ),
-            };
+            const initialPosition = this.grabbedPieceInitialPosition;
+            const finalPosition = this.getPositionAtCoord(
+                this.boundX(e.clientX),
+                this.boundY(e.clientY)
+            );
 
-            if (this.gameState.isMoveLegal(move)) {
-                this.gameState.makeMove(move);
-            }
+            this.gameState.makeMove(initialPosition, finalPosition);
+
             this.grabbedPiece = null;
             this.highlightPositions = [];
             this.forceUpdate();
@@ -109,6 +106,6 @@ export default class ChessComponent extends React.Component {
 
         let i = Math.floor((x - minX) / 100);
         let j = Math.floor((y - minY) / 100);
-        return this.gameState.map[j][i].position;
+        return getCoordToPosition({ rankIndex: j, fileIndex: i });
     }
 }

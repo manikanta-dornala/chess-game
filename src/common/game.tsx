@@ -4,22 +4,30 @@ import { IPiece } from './piece';
 export const chessFiles = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 export const chessRanks = ['1', '2', '3', '4', '5', '6', '7', '8'].reverse();
 
+export function getCoordToPosition({
+    rankIndex,
+    fileIndex,
+}: {
+    rankIndex: number;
+    fileIndex: number;
+}) {
+    return chessFiles[fileIndex] + chessRanks[rankIndex];
+}
+
 export class GameState {
+    squares: { [position: string]: IPiece | null };
     coordinateMap: { [name: string]: [number, number] } = {};
-    map: Array<Array<{ position: string; piece?: IPiece }>> = [];
     bottomColor: ChessColor;
     constructor(bottomColor: ChessColor) {
         this.bottomColor = bottomColor;
         let initialPositions = this.getInitialPositions(bottomColor);
+        this.squares = {};
         for (let j = 0; j < chessRanks.length; j++) {
-            this.map[j] = [];
             for (let i = 0; i < chessFiles.length; i++) {
-                let name = chessFiles[i] + chessRanks[j];
-                this.map[j].push({
-                    position: name,
-                    piece: initialPositions[name],
-                });
-                this.coordinateMap[name] = [j, i];
+                let position = chessFiles[i] + chessRanks[j];
+                this.squares[position] = initialPositions[position]
+                    ? initialPositions[position]
+                    : null;
             }
         }
     }
@@ -69,53 +77,27 @@ export class GameState {
         return initial_piece_positions;
     }
 
-    getSquareAtPosition(position: string) {
-        const pos = this.coordinateMap[position];
-        const i = pos[0];
-        const j = pos[1];
-        return this.map[i][j];
+    makeMove(initialPosition: string, finalPosition: string) {
+        if (!this.isMoveLegal(initialPosition, finalPosition)) return;
+        const piece = this.squares[initialPosition];
+        this.squares[finalPosition] = piece;
+        this.squares[initialPosition] = null;
     }
 
-    getPieceAtPosition(position: string) {
-        const piece = this.getSquareAtPosition(position).piece;
-        if (piece !== null && piece !== undefined) return piece;
-        return null;
-    }
+    isMoveLegal(initialPosition: string, finalPosition: string): boolean {
+        if (initialPosition === finalPosition) return false;
 
-    makeMove(move: { initialPosition: string; finalPosition: string }) {
-        if (!this.isMoveLegal(move)) return;
-        const initial = this.coordinateMap[move.initialPosition];
-        const final = this.coordinateMap[move.finalPosition];
-        let initialState = this.map[initial[0]][initial[1]];
-        let finalState = this.map[final[0]][final[1]];
-        finalState.piece = initialState.piece;
-        initialState.piece = undefined;
-    }
-
-    isMoveLegal(move: {
-        initialPosition: string;
-        finalPosition: string;
-    }): boolean {
-        if (move.initialPosition === move.finalPosition) return false;
-
-        const currPiece = this.getPieceAtPosition(move.initialPosition);
+        const currPiece = this.squares[initialPosition];
         if (!currPiece) {
             return false;
         }
-        const destPiece = this.getPieceAtPosition(move.finalPosition);
+        const destPiece = this.squares[finalPosition];
         if (destPiece && destPiece.color === currPiece?.color) {
             // cannot eat pieces of own color
             return false;
         }
-
-        const possibleMoves = this.getPossibleMoves(
-            currPiece,
-            move.initialPosition
-        );
-
-        console.log(possibleMoves, move.finalPosition);
-
-        if (possibleMoves.includes(move.finalPosition)) return true;
+        const possibleMoves = this.getPossibleMoves(currPiece, initialPosition);
+        if (possibleMoves.includes(finalPosition)) return true;
 
         return false;
     }
@@ -138,6 +120,5 @@ function getPawnMoves(position: string): Array<string> {
     } else {
         moves.push(file + (parseInt(rank) + 1));
     }
-    console.log(moves);
     return moves;
 }
