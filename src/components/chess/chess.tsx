@@ -1,6 +1,12 @@
 import React, { createRef } from 'react';
 import BoardComponent from '../board/board';
-import { GameState, IMove } from '../../common/game';
+import {
+    GameState,
+    getLegalMoves,
+    IMove,
+    isCheckMate,
+    isKingInCheck,
+} from '../../common/game';
 import { IPiece } from '../../common/piece';
 import { ChessColor } from '../../common/enums';
 
@@ -36,8 +42,34 @@ export default class ChessComponent extends React.Component {
                     </div>
                 </div>
                 <div className="info">
+                    <button
+                        onClick={(e) => {
+                            this.gameState = new GameState();
+                            this.forceUpdate();
+                        }}
+                    >
+                        New Game
+                    </button>
+                    <p></p>
                     <button onClick={this.toggleBoardColor}>Flip Board</button>
-                    <p>Current turn: {this.gameState.turn}</p>
+                    <p>
+                        Current turn: {this.gameState.turn}{' '}
+                        {isKingInCheck(
+                            this.gameState.turn,
+                            this.gameState.board
+                        )
+                            ? 'check'
+                            : ''}
+                    </p>
+                    <p>
+                        {isCheckMate(
+                            this.gameState.turn,
+                            this.gameState.board,
+                            this.gameState.lastMove()
+                        )
+                            ? 'Checkmate'
+                            : ''}
+                    </p>
                     <button
                         onClick={this.undoLastMove}
                         disabled={!this.gameState.boards.length}
@@ -62,10 +94,13 @@ export default class ChessComponent extends React.Component {
             );
             const piece = this.gameState.board[position];
             if (piece) {
-                this.highlightPositions = this.gameState.getPossibleTargets(
+                this.highlightPositions = getLegalMoves(
+                    this.gameState.turn,
                     piece,
-                    position
-                );
+                    position,
+                    this.gameState.board,
+                    this.gameState.lastMove()
+                ).map((e) => e.target);
                 this.grabbedPiece = piece;
                 this.grabbedElm = target;
                 this.grabbedPieceCurrPosition = position;

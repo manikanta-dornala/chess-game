@@ -31,4 +31,13 @@ export abstract class ChessPositionHelper {
         }
         return ChessColor.Dark;
     }
+
+    public static validSquares = new Set(
+        ChessPositionHelper.ranks.flatMap((rank) =>
+            ChessPositionHelper.files.map((file) => {
+                const position = `${file}${rank}`;
+                return position;
+            })
+        )
+    );
 }
