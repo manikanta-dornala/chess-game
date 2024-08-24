@@ -11,3 +11,14 @@ export enum PieceName {
     Queen = 'queen',
     King = 'king',
 }
+
+export enum ChessDirection {
+    Up = 'up',
+    Down = 'Down',
+}
+
+export enum MoveType {
+    Move = 'move',
+    Capture = 'capture',
+    Promote = 'promote',
+}

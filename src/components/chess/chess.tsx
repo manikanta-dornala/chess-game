@@ -51,7 +51,7 @@ export default class ChessComponent extends React.Component {
             const piece = this.gameState.squares[position];
 
             if (piece) {
-                this.highlightPositions = this.gameState.getPossibleMoves(
+                this.highlightPositions = this.gameState.getPossibleTargets(
                     piece,
                     position
                 );
@@ -62,8 +62,6 @@ export default class ChessComponent extends React.Component {
             }
         }
     }
-
-    movePiece(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {}
 
     dropPiece(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
         if (this.grabbedPiece) {
