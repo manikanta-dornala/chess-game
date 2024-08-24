@@ -67,10 +67,17 @@ export default class ChessComponent extends React.Component {
                         Undo last move
                     </button>
                     {this.gameState.moves.length ? <p>Moves</p> : ''}
-                    <ul>
+                    <ul style={{ height: '50vh', overflow: 'scroll' }}>
                         {this.gameState.moves.map((move: IMove) => {
                             return (
-                                <li>
+                                <li
+                                    key={
+                                        move.position +
+                                        move.piece.color +
+                                        move.piece.name +
+                                        move.target
+                                    }
+                                >
                                     {move.position} {move.piece.color}{' '}
                                     {move.piece.name} {move.type.toLowerCase()}{' '}
                                     {move.target}
