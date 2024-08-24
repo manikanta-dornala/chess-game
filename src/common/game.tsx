@@ -70,14 +70,16 @@ export class GameState {
         if (piece.name === PieceName.Pawn) {
             return this.getPawnMoves(piece, position);
         }
-        if (piece.name === PieceName.Rook) {
-            return this.getRookMoves(piece, position);
-        }
-        if (piece.name === PieceName.Knight) {
-            return this.getKnightMoves(piece, position);
-        }
-        if (piece.name === PieceName.Bishop) {
-            return this.getBishopMoves(piece, position);
+        if (
+            [
+                PieceName.Rook,
+                PieceName.Bishop,
+                PieceName.Queen,
+                PieceName.King,
+                PieceName.Knight,
+            ].includes(piece.name)
+        ) {
+            return this.getPieceMoves(piece, position);
         }
         return [];
     }
@@ -162,65 +164,28 @@ export class GameState {
         return moves;
     }
 
-    getRookMoves(piece: IPiece, position: string): Array<IMove> {
+    getPieceMoves(piece: IPiece, position: string) {
         const file = position[0];
         const rank = parseInt(position[1]);
         const moves: IMove[] = [];
 
-        const directions = [
+        const rook_move_set = [
             { file: 0, rank: 1 }, // up
             { file: 0, rank: -1 }, // down
             { file: -1, rank: 0 }, // left
             { file: 1, rank: 0 }, // right
         ];
 
-        for (const { file: df, rank: dr } of directions) {
-            for (let i = 1; i < 8; i++) {
-                const newFile = String.fromCharCode(
-                    file.charCodeAt(0) + df * i
-                );
-                const newRank = rank + dr * i;
-                const targetPos = `${newFile}${newRank}`;
+        const bishop_move_set = [
+            { file: 1, rank: 1 }, // up-right
+            { file: 1, rank: -1 }, // down-right
+            { file: -1, rank: 1 }, // up-left
+            { file: -1, rank: -1 }, // down-left
+        ];
 
-                if (!this.validSquares.has(targetPos)) break;
+        const queen_king_move_set = [...rook_move_set, ...bishop_move_set];
 
-                const pieceAtTarget = this.board[targetPos];
-                if (pieceAtTarget) {
-                    if (pieceAtTarget.color === piece.color) {
-                        // Friendly piece; stop movement in this direction
-                        break;
-                    } else {
-                        // Enemy piece; capture and stop movement
-                        moves.push({
-                            piece: piece,
-                            type: MoveType.Capture,
-                            target: targetPos,
-                            position: position,
-                        });
-                        break;
-                    }
-                }
-
-                // If no piece at the target position, add move
-                moves.push({
-                    piece: piece,
-                    type: MoveType.Move,
-                    target: targetPos,
-                    position: position,
-                });
-            }
-        }
-
-        return moves;
-    }
-
-    getKnightMoves(piece: IPiece, position: string): Array<IMove> {
-        const file = position[0];
-        const rank = parseInt(position[1]);
-        const moves: IMove[] = [];
-
-        // All possible relative moves for a knight (L-shape)
-        const knightMoves = [
+        const knight_move_set = [
             { file: 2, rank: 1 },
             { file: 2, rank: -1 },
             { file: -2, rank: 1 },
@@ -231,47 +196,34 @@ export class GameState {
             { file: -1, rank: -2 },
         ];
 
-        for (const move of knightMoves) {
-            const targetFile = String.fromCharCode(
-                file.charCodeAt(0) + move.file
-            );
-            const targetRank = rank + move.rank;
-            const targetPos = `${targetFile}${targetRank}`;
-
-            // Check if the target position is a valid square
-            if (this.validSquares.has(targetPos)) {
-                const targetPiece = this.board[targetPos];
-
-                // If the target square is empty or contains an enemy piece
-                if (!targetPiece || targetPiece.color !== piece.color) {
-                    moves.push({
-                        piece: piece,
-                        type: targetPiece ? MoveType.Capture : MoveType.Move,
-                        target: targetPos,
-                        position: position,
-                    });
-                }
-            }
+        let move_set: Array<{
+            file: number;
+            rank: number;
+        }> = [];
+        let move_count = 1;
+        if (piece.name === PieceName.Bishop) {
+            move_set = bishop_move_set;
+            move_count = 8;
+        }
+        if (piece.name === PieceName.Rook) {
+            move_set = rook_move_set;
+            move_count = 8;
+        }
+        if (piece.name === PieceName.Queen) {
+            move_set = queen_king_move_set;
+            move_count = 8;
+        }
+        if (piece.name === PieceName.King) {
+            move_set = queen_king_move_set;
+            move_count = 2;
+        }
+        if (piece.name === PieceName.Knight) {
+            move_set = knight_move_set;
+            move_count = 2;
         }
 
-        return moves;
-    }
-
-    getBishopMoves(piece: IPiece, position: string): Array<IMove> {
-        const file = position[0];
-        const rank = parseInt(position[1]);
-        const moves: IMove[] = [];
-
-        // Bishop moves diagonally in four directions
-        const directions = [
-            { file: 1, rank: 1 }, // up-right
-            { file: 1, rank: -1 }, // down-right
-            { file: -1, rank: 1 }, // up-left
-            { file: -1, rank: -1 }, // down-left
-        ];
-
-        for (const { file: df, rank: dr } of directions) {
-            for (let i = 1; i < 8; i++) {
+        for (const { file: df, rank: dr } of move_set) {
+            for (let i = 1; i < move_count; i++) {
                 const targetFile = String.fromCharCode(
                     file.charCodeAt(0) + df * i
                 );
