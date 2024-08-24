@@ -12,7 +12,7 @@ export default class BoardComponent extends React.Component<{
     highlightPositions: Array<string>;
     grabbedPiecePosition: string;
 }> {
-    render(): React.ReactNode {
+    getSquares() {
         let squares = [];
         for (let j = 0; j < ChessPositionHelper.ranks.length; j++) {
             for (let i = 0; i < ChessPositionHelper.files.length; i++) {
@@ -25,7 +25,7 @@ export default class BoardComponent extends React.Component<{
                     <SquareComponent
                         key={position}
                         position={position}
-                        gameState={this.props.gameState}
+                        piece={this.props.gameState.board[position]}
                         highlight={this.props.highlightPositions.includes(
                             position
                         )}
@@ -38,6 +38,9 @@ export default class BoardComponent extends React.Component<{
                 );
             }
         }
-        return <div className="board">{squares}</div>;
+        return squares;
+    }
+    render(): React.ReactNode {
+        return <div className="board">{this.getSquares()}</div>;
     }
 }

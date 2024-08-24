@@ -1,13 +1,13 @@
 import React from 'react';
 import './square.css';
-import { GameState } from '../../../common/game';
 import { ChessColor } from '../../../common/enums';
 import PieceComponent from './piece/piece';
 import { ChessPositionHelper } from '../../../common/chess-position-helper';
+import { IPiece } from '../../../common/piece';
 
 interface ISquareProps {
     position: string;
-    gameState: GameState;
+    piece: IPiece | null;
     highlight: boolean;
     grabbedPieceOpacity: number;
 }
@@ -27,8 +27,8 @@ export default class SquareComponent extends React.Component<
     render(): React.ReactNode {
         const {
             position,
+            piece,
             highlight,
-            gameState,
             grabbedPieceOpacity = 1,
         } = this.props;
         const { color } = this.state;
@@ -43,8 +43,6 @@ export default class SquareComponent extends React.Component<
                 ? 'highlight-border-light'
                 : 'highlight-border-dark'
             : '';
-
-        const piece = gameState.board[position];
 
         return (
             <div id={`board-square-${position}-${color}`}>

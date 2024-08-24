@@ -13,32 +13,34 @@ export interface IMove {
 export class GameState {
     board: { [position: string]: IPiece | null }; // Represents the current state of the chessboard
     turn: ChessColor = ChessColor.Light; // Tracks whose turn it is, starts with Light
-    direction = {
-        [ChessColor.Light]: ChessDirection.Up,
-        [ChessColor.Dark]: ChessDirection.Down,
-    }; // Maps each color to the direction their pieces move
-    validSquares: Set<string> = new Set(); // Set of all valid positions on the board
+    direction: { [key in ChessColor]: ChessDirection }; // Maps each color to the direction their pieces move
+    validSquares: Set<string>; // Set of all valid positions on the board
     moves: Array<IMove> = []; // Tracks all moves made in the game
     boards: Array<{ [position: string]: IPiece | null }> = []; // History of board states for undo functionality
 
     constructor() {
         this.board = { ...InitialPiecePositions }; // Initialize the board with the default piece positions
-        ChessPositionHelper.ranks.forEach((rank) =>
-            ChessPositionHelper.files.forEach((file) => {
-                const position = `${file}${rank}`;
-                this.validSquares.add(position); // Register each position as a valid square
-                if (!this.board[position]) {
-                    this.board[position] = null; // Ensure empty squares are represented as null
-                }
-            })
+        this.direction = {
+            [ChessColor.Light]: ChessDirection.Up,
+            [ChessColor.Dark]: ChessDirection.Down,
+        };
+
+        this.validSquares = new Set(
+            ChessPositionHelper.ranks.flatMap((rank) =>
+                ChessPositionHelper.files.map((file) => {
+                    const position = `${file}${rank}`;
+                    this.board[position] = this.board[position] ?? null; // Ensure empty squares are represented as null
+                    return position;
+                })
+            )
         );
     }
 
     // Reverts the game state to the previous turn
     takeBack() {
-        if (this.boards.length > 0) {
+        if (this.boards.length) {
             this.moves.pop(); // Remove the last move from history
-            this.board = this.boards.pop() || this.board; // Revert to the previous board state
+            this.board = this.boards.pop() ?? this.board; // Revert to the previous board state
             this.turn =
                 this.turn === ChessColor.Light
                     ? ChessColor.Dark
@@ -51,40 +53,36 @@ export class GameState {
         const currPiece = this.board[curr];
         if (!currPiece) return; // Exit if there's no piece to move
 
-        // Check if there's a valid move that can land the current piece on the target square
         const validMove = this.getPossibleMoves(currPiece, curr).find(
             (move) => move.target === target
         );
-
         if (validMove) {
             this.boards.push({ ...this.board }); // Save the current board state
             this.board[target] = currPiece; // Move the piece to the target square
             this.board[curr] = null; // Clear the original square
 
-            // Handle En Passant capture
             if (validMove.type === MoveType.EnPassant) {
                 const lastMove = this.lastMove();
-                if (lastMove) this.board[lastMove.target] = null;
+                if (lastMove) this.board[lastMove.target] = null; // Handle En Passant capture
             }
 
-            // Switch the turn to the other player
             this.turn =
                 this.turn === ChessColor.Light
                     ? ChessColor.Dark
-                    : ChessColor.Light;
+                    : ChessColor.Light; // Switch turn to the other player
             this.moves.push(validMove); // Record the move
         }
     }
 
     // Returns all possible target squares for a given piece
-    getPossibleTargets(piece: IPiece, position: string): Array<string> {
+    getPossibleTargets(piece: IPiece, position: string): string[] {
         return this.getPossibleMoves(piece, position).map(
             (move) => move.target
         );
     }
 
     // Returns all valid moves for a piece at a given position
-    getPossibleMoves(piece: IPiece, position: string): Array<IMove> {
+    getPossibleMoves(piece: IPiece, position: string): IMove[] {
         if (this.turn !== piece.color) return []; // Exit if it's not this piece's turn
 
         switch (piece.name) {
@@ -102,7 +100,7 @@ export class GameState {
     }
 
     // Handles pawn-specific moves including En Passant
-    getPawnMoves(piece: IPiece, position: string): Array<IMove> {
+    private getPawnMoves(piece: IPiece, position: string): IMove[] {
         const [file, rank] = [position[0], parseInt(position[1])];
         const moves: IMove[] = [];
         const moveDir =
@@ -159,7 +157,7 @@ export class GameState {
     }
 
     // Handles all non-pawn moves (Rook, Bishop, Queen, King, Knight)
-    getPieceMoves(piece: IPiece, position: string): Array<IMove> {
+    private getPieceMoves(piece: IPiece, position: string): IMove[] {
         const [file, rank] = [position[0], parseInt(position[1])];
         const moves: IMove[] = [];
         interface IMoveSet {
@@ -168,9 +166,7 @@ export class GameState {
         }
 
         // Define the move patterns for each piece type
-        const moveSets: {
-            [key in PieceName]: Array<IMoveSet>;
-        } = {
+        const moveSets: Record<PieceName, IMoveSet[]> = {
             [PieceName.Rook]: [
                 { file: 0, rank: 1 },
                 { file: 0, rank: -1 },
@@ -216,7 +212,6 @@ export class GameState {
             [PieceName.Pawn]: [], // Empty because pawns are handled separately
         };
 
-        // Determine how far the piece can move
         const moveLimit =
             piece.name === PieceName.King || piece.name === PieceName.Knight
                 ? 1

@@ -119,9 +119,9 @@ export default class ChessComponent extends React.Component {
     };
 
     boundX = (x: number) =>
-        this.boundCoordinate(x, this.boardRef.current?.offsetLeft ?? 0);
+        this.boundCoordinate(x, this.getBoardDimensions().offsetLeft ?? 0);
     boundY = (y: number) =>
-        this.boundCoordinate(y, this.boardRef.current?.offsetTop ?? 0);
+        this.boundCoordinate(y, this.getBoardDimensions().offsetTop ?? 0);
 
     boundCoordinate = (coord: number, min: number) =>
         Math.max(min, Math.min(coord, min + 701));
@@ -140,5 +140,13 @@ export default class ChessComponent extends React.Component {
 
     isGrabbable(element: HTMLElement): boolean {
         return !this.grabbedPiece && element.classList.contains('chess-piece');
+    }
+
+    private getBoardDimensions() {
+        if (this.boardRef.current) {
+            const { offsetLeft, offsetTop } = this.boardRef.current;
+            return { offsetLeft, offsetTop };
+        }
+        return { offsetLeft: 0, offsetTop: 0 };
     }
 }
