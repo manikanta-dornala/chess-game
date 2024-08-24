@@ -20,4 +20,15 @@ export abstract class ChessPositionHelper {
             ? file + rank
             : this.files[7 - fileIndex] + this.ranks[7 - rankIndex];
     }
+
+    public static getSquareColor(position: string): ChessColor {
+        const xPos = position[0];
+        const yPos = parseInt(position[1], 10);
+        if (['a', 'c', 'e', 'g'].includes(xPos) && yPos % 2 === 0) {
+            return ChessColor.Light;
+        } else if (['b', 'd', 'f', 'h'].includes(xPos) && yPos % 2 === 1) {
+            return ChessColor.Light;
+        }
+        return ChessColor.Dark;
+    }
 }

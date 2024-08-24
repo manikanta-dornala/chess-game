@@ -3,11 +3,13 @@ import './square.css';
 import { GameState } from '../../../common/game';
 import { ChessColor } from '../../../common/enums';
 import PieceComponent from './piece/piece';
+import { ChessPositionHelper } from '../../../common/chess-position-helper';
 
 interface ISquareProps {
     position: string;
     gameState: GameState;
     highlight: boolean;
+    grabbedPieceOpacity: number;
 }
 
 interface ISquareState {
@@ -19,11 +21,16 @@ export default class SquareComponent extends React.Component<
     ISquareState
 > {
     state: ISquareState = {
-        color: getSquareColor(this.props.position),
+        color: ChessPositionHelper.getSquareColor(this.props.position),
     };
 
     render(): React.ReactNode {
-        const { position, highlight, gameState } = this.props;
+        const {
+            position,
+            highlight,
+            gameState,
+            grabbedPieceOpacity = 1,
+        } = this.props;
         const { color } = this.state;
 
         const squareClass =
@@ -51,19 +58,14 @@ export default class SquareComponent extends React.Component<
                 </span>
                 <div className={`${squareClass} ${highlightClass}`}>
                     {piece && (
-                        <PieceComponent name={piece.name} color={piece.color} />
+                        <PieceComponent
+                            name={piece.name}
+                            color={piece.color}
+                            opacity={grabbedPieceOpacity}
+                        />
                     )}
                 </div>
             </div>
         );
     }
-}
-
-function getSquareColor(position: string): ChessColor {
-    const [file, rank] = [position[0], parseInt(position[1], 10)];
-    const isLightSquare =
-        (['a', 'c', 'e', 'g'].includes(file) && rank % 2 === 0) ||
-        (['b', 'd', 'f', 'h'].includes(file) && rank % 2 === 1);
-
-    return isLightSquare ? ChessColor.Light : ChessColor.Dark;
 }

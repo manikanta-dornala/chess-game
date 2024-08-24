@@ -10,6 +10,7 @@ export default class BoardComponent extends React.Component<{
     gameState: GameState;
     bottomColor: ChessColor;
     highlightPositions: Array<string>;
+    grabbedPiecePosition: string;
 }> {
     render(): React.ReactNode {
         let squares = [];
@@ -28,6 +29,11 @@ export default class BoardComponent extends React.Component<{
                         highlight={this.props.highlightPositions.includes(
                             position
                         )}
+                        grabbedPieceOpacity={
+                            this.props.grabbedPiecePosition === position
+                                ? 0.2
+                                : 1
+                        }
                     ></SquareComponent>
                 );
             }

@@ -10,7 +10,7 @@ import { ChessPositionHelper } from '../../common/chess-position-helper';
 export default class ChessComponent extends React.Component {
     private boardRef = createRef<HTMLDivElement>();
     grabbedPiece: IPiece | null = null;
-    grabbedPieceCurrPosition = '';
+    grabbedPieceCurrPosition: string = '';
     gameState = new GameState();
     highlightPositions: string[] = [];
     grabbedElm: HTMLElement | null = null;
@@ -25,13 +25,13 @@ export default class ChessComponent extends React.Component {
                         onDragOver={(e) => e.preventDefault()}
                         onDragEnd={this.dropPiece}
                         onDragStart={this.grabPiece}
-                        onDrag={(e) => this.hideGrabbedElement()}
                         ref={this.boardRef}
                     >
                         <BoardComponent
                             gameState={this.gameState}
                             highlightPositions={this.highlightPositions}
                             bottomColor={this.bottomColor}
+                            grabbedPiecePosition={this.grabbedPieceCurrPosition}
                         />
                     </div>
                 </div>
@@ -76,7 +76,6 @@ export default class ChessComponent extends React.Component {
 
     dropPiece = (e: React.MouseEvent<HTMLDivElement>) => {
         if (this.grabbedPiece) {
-            this.showGrabbedElement();
             const targetPosition = this.getPositionAtCoord(
                 this.boundX(e.clientX),
                 this.boundY(e.clientY)
@@ -87,8 +86,8 @@ export default class ChessComponent extends React.Component {
                     targetPosition
                 );
             }
-            this.resetGrab();
         }
+        this.resetGrab();
     };
 
     toggleBoardColor = () => {
@@ -112,16 +111,9 @@ export default class ChessComponent extends React.Component {
         </li>
     );
 
-    hideGrabbedElement = () => {
-        if (this.grabbedElm) this.grabbedElm.style.display = 'none';
-    };
-
-    showGrabbedElement = () => {
-        if (this.grabbedElm) this.grabbedElm.style.display = 'block';
-    };
-
     resetGrab = () => {
         this.grabbedPiece = null;
+        this.grabbedPieceCurrPosition = '';
         this.highlightPositions = [];
         this.forceUpdate();
     };
