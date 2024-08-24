@@ -4,7 +4,7 @@ import './board.css';
 import { GameState } from '../../common/game';
 import { ChessColor } from '../../common/enums';
 import SquareComponent from './square/square';
-import { ChessPositionHelper } from '../../common/chess-position-helper';
+import { PositionHelper } from '../../common/position-helper';
 
 export default class BoardComponent extends React.Component<{
     gameState: GameState;
@@ -14,9 +14,9 @@ export default class BoardComponent extends React.Component<{
 }> {
     getSquares() {
         let squares = [];
-        for (let j = 0; j < ChessPositionHelper.ranks.length; j++) {
-            for (let i = 0; i < ChessPositionHelper.files.length; i++) {
-                let position = ChessPositionHelper.gridCoordToPosition({
+        for (let j = 0; j < PositionHelper.ranks.length; j++) {
+            for (let i = 0; i < PositionHelper.files.length; i++) {
+                let position = PositionHelper.gridCoordToPosition({
                     rankIndex: j,
                     fileIndex: i,
                     bottomColor: this.props.bottomColor,

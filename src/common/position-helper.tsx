@@ -1,6 +1,6 @@
 import { ChessColor } from './enums';
 
-export abstract class ChessPositionHelper {
+export abstract class PositionHelper {
     public static files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     public static ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
 
@@ -33,8 +33,8 @@ export abstract class ChessPositionHelper {
     }
 
     public static validSquares = new Set(
-        ChessPositionHelper.ranks.flatMap((rank) =>
-            ChessPositionHelper.files.map((file) => {
+        PositionHelper.ranks.flatMap((rank) =>
+            PositionHelper.files.map((file) => {
                 const position = `${file}${rank}`;
                 return position;
             })

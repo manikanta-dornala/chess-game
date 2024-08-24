@@ -1,17 +1,12 @@
 import React, { createRef } from 'react';
 import BoardComponent from '../board/board';
-import {
-    GameState,
-    getLegalMoves,
-    IMove,
-    isCheckMate,
-    isKingInCheck,
-} from '../../common/game';
+import { GameState } from '../../common/game';
 import { IPiece } from '../../common/piece';
 import { ChessColor } from '../../common/enums';
 
 import './chess.css';
-import { ChessPositionHelper } from '../../common/chess-position-helper';
+import { PositionHelper } from '../../common/position-helper';
+import { IMove, MovesHelper } from '../../common/moves-helper';
 
 export default class ChessComponent extends React.Component {
     private boardRef = createRef<HTMLDivElement>();
@@ -54,7 +49,7 @@ export default class ChessComponent extends React.Component {
                     <button onClick={this.toggleBoardColor}>Flip Board</button>
                     <p>
                         Current turn: {this.gameState.turn}{' '}
-                        {isKingInCheck(
+                        {MovesHelper.isKingInCheck(
                             this.gameState.turn,
                             this.gameState.board
                         )
@@ -62,7 +57,7 @@ export default class ChessComponent extends React.Component {
                             : ''}
                     </p>
                     <p>
-                        {isCheckMate(
+                        {MovesHelper.isCheckMate(
                             this.gameState.turn,
                             this.gameState.board,
                             this.gameState.lastMove()
@@ -94,7 +89,7 @@ export default class ChessComponent extends React.Component {
             );
             const piece = this.gameState.board[position];
             if (piece) {
-                this.highlightPositions = getLegalMoves(
+                this.highlightPositions = MovesHelper.getLegalMoves(
                     this.gameState.turn,
                     piece,
                     position,
@@ -166,7 +161,7 @@ export default class ChessComponent extends React.Component {
         const minY = this.boardRef.current?.offsetTop ?? 0;
         const fileIndex = Math.floor((x - minX) / 100);
         const rankIndex = Math.floor((y - minY) / 100);
-        return ChessPositionHelper.gridCoordToPosition({
+        return PositionHelper.gridCoordToPosition({
             rankIndex,
             fileIndex,
             bottomColor: this.bottomColor,

@@ -2,7 +2,7 @@ import React from 'react';
 import './square.css';
 import { ChessColor } from '../../../common/enums';
 import PieceComponent from './piece/piece';
-import { ChessPositionHelper } from '../../../common/chess-position-helper';
+import { PositionHelper } from '../../../common/position-helper';
 import { IPiece } from '../../../common/piece';
 
 interface ISquareProps {
@@ -21,7 +21,7 @@ export default class SquareComponent extends React.Component<
     ISquareState
 > {
     state: ISquareState = {
-        color: ChessPositionHelper.getSquareColor(this.props.position),
+        color: PositionHelper.getSquareColor(this.props.position),
     };
 
     render(): React.ReactNode {
