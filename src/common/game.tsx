@@ -73,118 +73,93 @@ export class GameState {
         if (piece.name === PieceName.Rook) {
             return this.getRookMoves(piece, position);
         }
+        if (piece.name === PieceName.Knight) {
+            return this.getKnightMoves(piece, position);
+        }
+        if (piece.name === PieceName.Bishop) {
+            return this.getBishopMoves(piece, position);
+        }
         return [];
     }
 
     getPawnMoves(piece: IPiece, position: string): Array<IMove> {
         const file = position[0];
-        const rank = position[1];
-        const moves: Set<IMove> = new Set();
-        const baseRank =
-            this.direction[this.turn] === ChessDirection.Up ? '2' : '7';
-        const moveAdd =
+        const rank = parseInt(position[1]);
+        const moves: IMove[] = [];
+
+        const moveDirection =
             this.direction[this.turn] === ChessDirection.Up ? 1 : -1;
-        const enpassantRank =
-            this.direction[this.turn] === ChessDirection.Up ? '5' : '4';
+        const baseRank =
+            this.direction[this.turn] === ChessDirection.Up ? 2 : 7;
+        const enPassantRank =
+            this.direction[this.turn] === ChessDirection.Up ? 5 : 4;
 
-        // pawn can move one step forward
-        moves.add({
-            target: file + (parseInt(rank) + moveAdd),
-            type: MoveType.Move,
-            piece: piece,
-            position: position,
-        });
+        const forwardOne = `${file}${rank + moveDirection}`;
+        const forwardTwo = `${file}${rank + 2 * moveDirection}`;
+        const captureLeft = `${String.fromCharCode(file.charCodeAt(0) - 1)}${rank + moveDirection}`;
+        const captureRight = `${String.fromCharCode(file.charCodeAt(0) + 1)}${rank + moveDirection}`;
 
-        // if at base, pawn can move two steps forward
-        if (rank === baseRank) {
-            moves.add({
-                target: file + (parseInt(rank) + moveAdd + moveAdd),
-                type: MoveType.PawnMove2,
-                piece: piece,
-                position: position,
-            });
-        }
-
-        // capture positions
-        moves.add({
-            target:
-                String.fromCharCode(file.charCodeAt(0) - 1) +
-                (parseInt(rank) + moveAdd), // left diagnol,
-            type: MoveType.Capture,
-            piece: piece,
-            position: position,
-        });
-
-        moves.add({
-            target:
-                String.fromCharCode(file.charCodeAt(0) + 1) +
-                (parseInt(rank) + moveAdd), // right diagnol
-            type: MoveType.Capture,
-            piece: piece,
-            position: position,
-        });
-
-        // en passant positions
-        if (rank === enpassantRank) {
-            moves.add({
-                target:
-                    String.fromCharCode(file.charCodeAt(0) - 1) +
-                    (parseInt(rank) + moveAdd), // left,
-                type: MoveType.EnPassant,
-                piece: piece,
-                position: position,
+        // One step forward
+        if (this.validSquares.has(forwardOne) && !this.board[forwardOne]) {
+            moves.push({
+                piece,
+                type: MoveType.Move,
+                target: forwardOne,
+                position,
             });
 
-            moves.add({
-                target:
-                    String.fromCharCode(file.charCodeAt(0) + 1) +
-                    (parseInt(rank) + moveAdd), // right
-                type: MoveType.EnPassant,
-                piece: piece,
-                position: position,
-            });
-        }
-
-        const validMoves = Array.from(moves).filter((move) => {
-            // target has to be a chess square
-            if (!this.validSquares.has(move.target)) return false;
-
-            let pieceAtTarget = this.board[move.target];
-            // Check if there are no pieces at final pos when moving
+            // Two steps forward from the base rank
             if (
-                (move.type === MoveType.Move ||
-                    move.type === MoveType.PawnMove2) &&
-                !pieceAtTarget
+                rank === baseRank &&
+                this.validSquares.has(forwardTwo) &&
+                !this.board[forwardTwo]
             ) {
-                return true;
+                moves.push({
+                    piece,
+                    type: MoveType.PawnMove2,
+                    target: forwardTwo,
+                    position,
+                });
             }
+        }
 
-            //Check if its enemy when capturing
-            if (move.type === MoveType.Capture) {
-                if (!pieceAtTarget) return false;
-                if (pieceAtTarget.color !== this.turn) return true;
+        // Captures (only if an enemy piece is present)
+        [captureLeft, captureRight].forEach((target) => {
+            if (this.validSquares.has(target)) {
+                const targetPiece = this.board[target];
+                if (targetPiece && targetPiece.color !== this.turn) {
+                    moves.push({
+                        piece,
+                        type: MoveType.Capture,
+                        target,
+                        position,
+                    });
+                }
             }
+        });
 
-            //Check if enpassant is valid
-            if (move.type === MoveType.EnPassant) {
-                if (pieceAtTarget) return false;
-
-                const enpassant_pawn_pos =
-                    move.target[0] + (parseInt(move.target[1]) - moveAdd);
-
+        // En passant
+        if (rank === enPassantRank) {
+            [captureLeft, captureRight].forEach((target) => {
+                const enPassantPawnPos = `${target[0]}${rank}`;
                 const lastMove = this.lastMove();
                 if (
-                    lastMove &&
-                    lastMove.type === MoveType.PawnMove2 &&
-                    lastMove.target === enpassant_pawn_pos
-                )
-                    return true;
-            }
+                    this.validSquares.has(target) &&
+                    !this.board[target] &&
+                    lastMove?.type === MoveType.PawnMove2 &&
+                    lastMove.target === enPassantPawnPos
+                ) {
+                    moves.push({
+                        piece,
+                        type: MoveType.EnPassant,
+                        target,
+                        position,
+                    });
+                }
+            });
+        }
 
-            return false;
-        });
-
-        return validMoves;
+        return moves;
     }
 
     getRookMoves(piece: IPiece, position: string): Array<IMove> {
@@ -233,6 +208,101 @@ export class GameState {
                     target: targetPos,
                     position: position,
                 });
+            }
+        }
+
+        return moves;
+    }
+
+    getKnightMoves(piece: IPiece, position: string): Array<IMove> {
+        const file = position[0];
+        const rank = parseInt(position[1]);
+        const moves: IMove[] = [];
+
+        // All possible relative moves for a knight (L-shape)
+        const knightMoves = [
+            { file: 2, rank: 1 },
+            { file: 2, rank: -1 },
+            { file: -2, rank: 1 },
+            { file: -2, rank: -1 },
+            { file: 1, rank: 2 },
+            { file: 1, rank: -2 },
+            { file: -1, rank: 2 },
+            { file: -1, rank: -2 },
+        ];
+
+        for (const move of knightMoves) {
+            const targetFile = String.fromCharCode(
+                file.charCodeAt(0) + move.file
+            );
+            const targetRank = rank + move.rank;
+            const targetPos = `${targetFile}${targetRank}`;
+
+            // Check if the target position is a valid square
+            if (this.validSquares.has(targetPos)) {
+                const targetPiece = this.board[targetPos];
+
+                // If the target square is empty or contains an enemy piece
+                if (!targetPiece || targetPiece.color !== piece.color) {
+                    moves.push({
+                        piece: piece,
+                        type: targetPiece ? MoveType.Capture : MoveType.Move,
+                        target: targetPos,
+                        position: position,
+                    });
+                }
+            }
+        }
+
+        return moves;
+    }
+
+    getBishopMoves(piece: IPiece, position: string): Array<IMove> {
+        const file = position[0];
+        const rank = parseInt(position[1]);
+        const moves: IMove[] = [];
+
+        // Bishop moves diagonally in four directions
+        const directions = [
+            { file: 1, rank: 1 }, // up-right
+            { file: 1, rank: -1 }, // down-right
+            { file: -1, rank: 1 }, // up-left
+            { file: -1, rank: -1 }, // down-left
+        ];
+
+        for (const { file: df, rank: dr } of directions) {
+            for (let i = 1; i < 8; i++) {
+                const targetFile = String.fromCharCode(
+                    file.charCodeAt(0) + df * i
+                );
+                const targetRank = rank + dr * i;
+                const targetPos = `${targetFile}${targetRank}`;
+
+                // Check if the target position is a valid square
+                if (!this.validSquares.has(targetPos)) break;
+
+                const targetPiece = this.board[targetPos];
+                if (targetPiece) {
+                    // Stop if a piece is encountered
+                    if (targetPiece.color !== piece.color) {
+                        // Capture the enemy piece
+                        moves.push({
+                            piece: piece,
+                            type: MoveType.Capture,
+                            target: targetPos,
+                            position: position,
+                        });
+                    }
+                    break; // Stop further movement in this direction
+                } else {
+                    // If the square is empty, add the move
+                    moves.push({
+                        piece: piece,
+                        type: MoveType.Move,
+                        target: targetPos,
+                        position: position,
+                    });
+                }
             }
         }
 
