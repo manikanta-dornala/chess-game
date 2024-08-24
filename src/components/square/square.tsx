@@ -9,6 +9,7 @@ interface ISquareProps {
     position: string;
     // index: number;
     gameState: GameState;
+    highlight: boolean;
 }
 interface ISquareState {
     position: string;
@@ -46,12 +47,28 @@ export default class SquareComponent extends React.Component<
                 ></PieceComponent>
             );
         }
+        let highlightcomp = <div></div>;
+        if (this.props.highlight) {
+            highlightcomp = (
+                <div
+                    className={
+                        'highlight ' +
+                        (this.state.color === ChessColor.Light
+                            ? 'highlight-light'
+                            : 'highlight-dark')
+                    }
+                ></div>
+            );
+        }
         return (
             <div id={id}>
                 <span className="squareLabel" style={{ color: txtClr }}>
                     {this.state.position}
                 </span>
-                <div className={squareClass + ' boardSquare '}>{piececomp}</div>
+                <div className={squareClass + ' boardSquare '}>
+                    {piececomp}
+                    {highlightcomp}
+                </div>
             </div>
         );
     }

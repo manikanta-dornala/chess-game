@@ -1,8 +1,8 @@
 .boardSquare {
     display: grid;
     place-content: center;
-    height: 100px;
-    width: 100px;
+    height: 100.5px;
+    width: 100.5px;
     border: none;
 }
 
@@ -17,11 +17,36 @@
 .squareLabel {
     display: block;
     position: absolute;
-    font-size: smaller;
+    font-size: x-small;
     opacity: 50%;
     padding-left: 2px;
     -webkit-user-select: none; /* Safari */
     -moz-user-select: none; /* Firefox */
     -ms-user-select: none; /* IE10+/Edge */
     user-select: none; /* Standard */
+}
+
+.highlight {
+    height: 10px;
+    width: 10px;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 1;
+    border-radius: 50%;
+}
+
+.highlight-light {
+    background-image: radial-gradient(
+        circle at center,
+        #779656 0,
+        #ececd0 100%
+    );
+}
+
+.highlight-dark {
+    background-image: radial-gradient(
+        circle at center,
+        #ececd0 0,
+        #779656 100%
+    );
 }

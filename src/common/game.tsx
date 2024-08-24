@@ -1,8 +1,8 @@
 import { ChessColor, PieceName } from './enums';
 import { IPiece } from './piece';
 
-export const xAxis = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-export const yAxis = ['1', '2', '3', '4', '5', '6', '7', '8'].reverse();
+export const chessFiles = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+export const chessRanks = ['1', '2', '3', '4', '5', '6', '7', '8'].reverse();
 
 export class GameState {
     coordinateMap: { [name: string]: [number, number] } = {};
@@ -11,10 +11,10 @@ export class GameState {
     constructor(bottomColor: ChessColor) {
         this.bottomColor = bottomColor;
         let initialPositions = this.getInitialPositions(bottomColor);
-        for (let j = 0; j < yAxis.length; j++) {
+        for (let j = 0; j < chessRanks.length; j++) {
             this.map[j] = [];
-            for (let i = 0; i < xAxis.length; i++) {
-                let name = xAxis[i] + yAxis[j];
+            for (let i = 0; i < chessFiles.length; i++) {
+                let name = chessFiles[i] + chessRanks[j];
                 this.map[j].push({
                     position: name,
                     piece: initialPositions[name],
@@ -69,12 +69,75 @@ export class GameState {
         return initial_piece_positions;
     }
 
-    getPieceAtPosition(position: string) {
+    getSquareAtPosition(position: string) {
         const pos = this.coordinateMap[position];
         const i = pos[0];
         const j = pos[1];
-        const piece = this.map[i][j].piece;
+        return this.map[i][j];
+    }
+
+    getPieceAtPosition(position: string) {
+        const piece = this.getSquareAtPosition(position).piece;
         if (piece !== null && piece !== undefined) return piece;
         return null;
     }
+
+    makeMove(move: { initialPosition: string; finalPosition: string }) {
+        if (!this.isMoveLegal(move)) return;
+        const initial = this.coordinateMap[move.initialPosition];
+        const final = this.coordinateMap[move.finalPosition];
+        let initialState = this.map[initial[0]][initial[1]];
+        let finalState = this.map[final[0]][final[1]];
+        finalState.piece = initialState.piece;
+        initialState.piece = undefined;
+    }
+
+    isMoveLegal(move: {
+        initialPosition: string;
+        finalPosition: string;
+    }): boolean {
+        if (move.initialPosition === move.finalPosition) return false;
+
+        const currPiece = this.getPieceAtPosition(move.initialPosition);
+        if (!currPiece) {
+            return false;
+        }
+        const destPiece = this.getPieceAtPosition(move.finalPosition);
+        if (destPiece && destPiece.color === currPiece?.color) {
+            // cannot eat pieces of own color
+            return false;
+        }
+
+        const possibleMoves = this.getPossibleMoves(
+            currPiece,
+            move.initialPosition
+        );
+
+        console.log(possibleMoves, move.finalPosition);
+
+        if (possibleMoves.includes(move.finalPosition)) return true;
+
+        return false;
+    }
+
+    getPossibleMoves(piece: IPiece, position: string): Array<string> {
+        if (piece.name === PieceName.Pawn) {
+            return getPawnMoves(position);
+        }
+        return [];
+    }
+}
+
+function getPawnMoves(position: string): Array<string> {
+    const file = position[0];
+    const rank = position[1];
+    const moves: Array<string> = [];
+    if (rank === '2') {
+        moves.push(file + (parseInt(rank) + 1));
+        moves.push(file + (parseInt(rank) + 2));
+    } else {
+        moves.push(file + (parseInt(rank) + 1));
+    }
+    console.log(moves);
+    return moves;
 }
