@@ -21,6 +21,7 @@ export enum ChessDirection {
 
 export enum MoveType {
     Move = 'move',
+    PawnMove2 = 'move 2',
     Capture = 'capture',
     EnPassant = 'en passant',
     Promote = 'promote',

@@ -1,10 +1,11 @@
 import React, { createRef } from 'react';
 import BoardComponent from '../board/board';
-import { BoardCoordinateSystem, GameState, IMove } from '../../common/game';
+import { GameState, IMove } from '../../common/game';
 import { IPiece } from '../../common/piece';
 import { ChessColor } from '../../common/enums';
 
 import './chess.css';
+import { BoardCoordinateSystem } from '../../common/constants';
 
 export default class ChessComponent extends React.Component {
     private boardRef = createRef<HTMLDivElement>();
@@ -54,7 +55,7 @@ export default class ChessComponent extends React.Component {
                     >
                         Flip Board
                     </button>
-                    <p>Current turn {this.gameState.turn}</p>
+                    <p>Current turn: {this.gameState.turn}</p>
                     {this.gameState.moves.length ? <p>Moves</p> : ''}
                     <ul>
                         {this.gameState.moves.map((move: IMove) => {
@@ -138,7 +139,7 @@ export default class ChessComponent extends React.Component {
 
         let i = Math.floor((x - minX) / 100);
         let j = Math.floor((y - minY) / 100);
-        return BoardCoordinateSystem.getCoordToPosition({
+        return BoardCoordinateSystem.gridCoordToPosition({
             rankIndex: j,
             fileIndex: i,
             bottomColor: this.bottomColor,
