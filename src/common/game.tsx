@@ -70,6 +70,9 @@ export class GameState {
         if (piece.name === PieceName.Pawn) {
             return this.getPawnMoves(piece, position);
         }
+        if (piece.name === PieceName.Rook) {
+            return this.getRookMoves(piece, position);
+        }
         return [];
     }
 
@@ -142,14 +145,9 @@ export class GameState {
             });
         }
 
-        console.log(moves);
-
         const validMoves = Array.from(moves).filter((move) => {
-            console.log(move);
-
             // target has to be a chess square
             if (!this.validSquares.has(move.target)) return false;
-            console.log('is valid target');
 
             let pieceAtTarget = this.board[move.target];
             // Check if there are no pieces at final pos when moving
@@ -160,7 +158,6 @@ export class GameState {
             ) {
                 return true;
             }
-            console.log('no pieces at target');
 
             //Check if its enemy when capturing
             if (move.type === MoveType.Capture) {
@@ -174,7 +171,6 @@ export class GameState {
 
                 const enpassant_pawn_pos =
                     move.target[0] + (parseInt(move.target[1]) - moveAdd);
-                console.log(enpassant_pawn_pos);
 
                 const lastMove = this.lastMove();
                 if (
@@ -189,6 +185,58 @@ export class GameState {
         });
 
         return validMoves;
+    }
+
+    getRookMoves(piece: IPiece, position: string): Array<IMove> {
+        const file = position[0];
+        const rank = parseInt(position[1]);
+        const moves: IMove[] = [];
+
+        const directions = [
+            { file: 0, rank: 1 }, // up
+            { file: 0, rank: -1 }, // down
+            { file: -1, rank: 0 }, // left
+            { file: 1, rank: 0 }, // right
+        ];
+
+        for (const { file: df, rank: dr } of directions) {
+            for (let i = 1; i < 8; i++) {
+                const newFile = String.fromCharCode(
+                    file.charCodeAt(0) + df * i
+                );
+                const newRank = rank + dr * i;
+                const targetPos = `${newFile}${newRank}`;
+
+                if (!this.validSquares.has(targetPos)) break;
+
+                const pieceAtTarget = this.board[targetPos];
+                if (pieceAtTarget) {
+                    if (pieceAtTarget.color === piece.color) {
+                        // Friendly piece; stop movement in this direction
+                        break;
+                    } else {
+                        // Enemy piece; capture and stop movement
+                        moves.push({
+                            piece: piece,
+                            type: MoveType.Capture,
+                            target: targetPos,
+                            position: position,
+                        });
+                        break;
+                    }
+                }
+
+                // If no piece at the target position, add move
+                moves.push({
+                    piece: piece,
+                    type: MoveType.Move,
+                    target: targetPos,
+                    position: position,
+                });
+            }
+        }
+
+        return moves;
     }
 
     lastMove() {
