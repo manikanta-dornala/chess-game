@@ -1,8 +1,25 @@
+:root {
+    --board-size: 800px;
+    --square-size: calc(var(--board-size) / 8);
+    --light-square-color: #ececd0;
+    --dark-square-color: #779656;
+    --highlight-border-color: lightgreen;
+    --highlight-border-width: 1px;
+    --highlight-shadow-light: 0 0 2em 0.5em lightgreen inset,
+        0 0 2em 0.7em seagreen inset;
+    --highlight-shadow-dark: 0 0 2em 0.7em lightgreen inset,
+        0 0 2em 0.5em wheat inset;
+    --piece-size: 100px;
+    --piece-background-size: 80px;
+    --text-color-light: black;
+    --text-color-dark: white;
+}
+
 #chess-game {
     display: grid;
     background-color: black;
-    width: 801px;
-    height: 801px;
+    width: calc(var(--board-size) - 3px); /* Adjust for border */
+    height: calc(var(--board-size) - 3px);
 }
 
 .container {

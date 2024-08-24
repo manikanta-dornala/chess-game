@@ -1,5 +1,4 @@
 import React from 'react';
-
 import './square.css';
 import { GameState } from '../../../common/game';
 import { ChessColor } from '../../../common/enums';
@@ -7,92 +6,64 @@ import PieceComponent from './piece/piece';
 
 interface ISquareProps {
     position: string;
-    // index: number;
     gameState: GameState;
     highlight: boolean;
 }
+
 interface ISquareState {
-    position: string;
     color: ChessColor;
 }
+
 export default class SquareComponent extends React.Component<
     ISquareProps,
     ISquareState
 > {
-    constructor(props: ISquareProps) {
-        super(props);
-        this.state = {
-            position: props.position,
-            color: getSquareColor(props.position),
-        };
-    }
+    state: ISquareState = {
+        color: getSquareColor(this.props.position),
+    };
 
     render(): React.ReactNode {
-        let id = 'board-square-' + this.state.position + '-' + this.state.color;
-        let squareClass =
-            this.state.color === ChessColor.Light
-                ? 'lightSquare boardSquare '
-                : 'darkSquare boardSquare ';
-        let txtClr = this.state.color === ChessColor.Light ? 'black' : 'white';
+        const { position, highlight, gameState } = this.props;
+        const { color } = this.state;
 
-        const piece = this.props.gameState.board[this.props.position];
-        let piececomp = <div></div>;
-        if (piece !== null && piece !== undefined) {
-            piececomp = (
-                <PieceComponent
-                    name={piece.name}
-                    color={piece.color}
-                ></PieceComponent>
-            );
-        }
-        let highlightCls = '';
-        if (this.props.highlight) {
-            highlightCls =
-                this.state.color === ChessColor.Light
-                    ? 'highlight-border-light'
-                    : 'highlight-border-dark';
-        }
-        // let highlightcomp = <div></div>;
-        // if (this.props.highlight) {
-        //     highlightcomp = (
-        //         <div
-        //             className={
-        //                 'highlight ' +
-        //                 (this.state.color === ChessColor.Light
-        //                     ? 'highlight-light'
-        //                     : 'highlight-dark')
-        //             }
-        //         ></div>
-        //     );
-        // }
+        const squareClass =
+            color === ChessColor.Light
+                ? 'lightSquare boardSquare'
+                : 'darkSquare boardSquare';
+
+        const highlightClass = highlight
+            ? color === ChessColor.Light
+                ? 'highlight-border-light'
+                : 'highlight-border-dark'
+            : '';
+
+        const piece = gameState.board[position];
+
         return (
-            <div id={id}>
-                <span className="squareLabel" style={{ color: txtClr }}>
-                    {this.state.position}
+            <div id={`board-square-${position}-${color}`}>
+                <span
+                    className="squareLabel"
+                    style={{
+                        color: color === ChessColor.Light ? 'black' : 'white',
+                    }}
+                >
+                    {position}
                 </span>
-                <div className={squareClass + highlightCls}>
-                    {piececomp}
-                    {/* {highlightcomp} */}
+                <div className={`${squareClass} ${highlightClass}`}>
+                    {piece && (
+                        <PieceComponent name={piece.name} color={piece.color} />
+                    )}
                 </div>
             </div>
         );
     }
 }
 
-export function getSquareColor(position: string): ChessColor {
-    let xPos = position[0];
-    let yPos = parseInt(position[1]);
-    let color = ChessColor.Dark;
-    if (
-        ['a', 'c', 'e', 'g'].findIndex((x) => x === xPos) !== -1 &&
-        yPos % 2 === 0
-    ) {
-        color = ChessColor.Light;
-    } else if (
-        ['b', 'd', 'f', 'h'].findIndex((x) => x === xPos) !== -1 &&
-        yPos % 2 === 1
-    ) {
-        color = ChessColor.Light;
-    }
-    return color;
+function getSquareColor(position: string): ChessColor {
+    const [file, rank] = [position[0], parseInt(position[1], 10)];
+    const isLightSquare =
+        (['a', 'c', 'e', 'g'].includes(file) && rank % 2 === 0) ||
+        (['b', 'd', 'f', 'h'].includes(file) && rank % 2 === 1);
+
+    return isLightSquare ? ChessColor.Light : ChessColor.Dark;
 }

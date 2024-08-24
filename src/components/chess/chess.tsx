@@ -5,20 +5,16 @@ import { IPiece } from '../../common/piece';
 import { ChessColor } from '../../common/enums';
 
 import './chess.css';
-import { BoardCoordinateSystem } from '../../common/constants';
+import { ChessPositionHelper } from '../../common/chess-position-helper';
 
 export default class ChessComponent extends React.Component {
     private boardRef = createRef<HTMLDivElement>();
     grabbedPiece: IPiece | null = null;
-    grabbedPieceCurrPosition: string = '';
-    gameState: GameState;
-    highlightPositions: Array<string> = [];
+    grabbedPieceCurrPosition = '';
+    gameState = new GameState();
+    highlightPositions: string[] = [];
     grabbedElm: HTMLElement | null = null;
     bottomColor = ChessColor.Light;
-    constructor(props: any) {
-        super(props);
-        this.gameState = new GameState();
-    }
 
     render(): React.ReactNode {
         return (
@@ -27,139 +23,130 @@ export default class ChessComponent extends React.Component {
                     <div
                         id="chess-game"
                         onDragOver={(e) => e.preventDefault()}
-                        onDragEnd={(e) => this.dropPiece(e)}
-                        onDragStart={(e) => this.grabPiece(e)}
-                        onDrag={(e) => {
-                            if (this.grabbedElm) {
-                                this.grabbedElm.style.display = 'none';
-                            }
-                        }}
+                        onDragEnd={this.dropPiece}
+                        onDragStart={this.grabPiece}
+                        onDrag={(e) => this.hideGrabbedElement()}
                         ref={this.boardRef}
                     >
                         <BoardComponent
                             gameState={this.gameState}
                             highlightPositions={this.highlightPositions}
                             bottomColor={this.bottomColor}
-                        ></BoardComponent>
+                        />
                     </div>
                 </div>
                 <div className="info">
-                    <button
-                        onClick={(e) => {
-                            this.bottomColor =
-                                this.bottomColor === ChessColor.Light
-                                    ? ChessColor.Dark
-                                    : ChessColor.Light;
-                            this.forceUpdate();
-                        }}
-                    >
-                        Flip Board
-                    </button>
+                    <button onClick={this.toggleBoardColor}>Flip Board</button>
                     <p>Current turn: {this.gameState.turn}</p>
-
                     <button
-                        onClick={(e) => {
-                            this.gameState.takeBack();
-                            this.forceUpdate();
-                        }}
-                        disabled={this.gameState.boards.length === 0}
+                        onClick={this.undoLastMove}
+                        disabled={!this.gameState.boards.length}
                     >
                         Undo last move
                     </button>
-                    {this.gameState.moves.length ? <p>Moves</p> : ''}
+                    {this.gameState.moves.length > 0 && <p>Moves</p>}
                     <ul style={{ height: '50vh', overflow: 'scroll' }}>
-                        {this.gameState.moves.map((move: IMove) => {
-                            return (
-                                <li
-                                    key={
-                                        move.position +
-                                        move.piece.color +
-                                        move.piece.name +
-                                        move.target
-                                    }
-                                >
-                                    {move.position} {move.piece.color}{' '}
-                                    {move.piece.name} {move.type.toLowerCase()}{' '}
-                                    {move.target}
-                                </li>
-                            );
-                        })}
+                        {this.gameState.moves.map(this.renderMove)}
                     </ul>
                 </div>
             </div>
         );
     }
 
-    grabPiece(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
-        let currelm = e.target as HTMLElement;
-        if (
-            (this.grabbedPiece === null || this.grabbedPiece === undefined) &&
-            currelm.classList.contains('chess-piece')
-        ) {
+    grabPiece = (e: React.MouseEvent<HTMLDivElement>) => {
+        const target = e.target as HTMLElement;
+        if (this.isGrabbable(target)) {
             const position = this.getPositionAtCoord(
                 this.boundX(e.clientX),
                 this.boundY(e.clientY)
             );
             const piece = this.gameState.board[position];
-
             if (piece) {
                 this.highlightPositions = this.gameState.getPossibleTargets(
                     piece,
                     position
                 );
                 this.grabbedPiece = piece;
-                this.forceUpdate();
-                this.grabbedElm = currelm;
+                this.grabbedElm = target;
                 this.grabbedPieceCurrPosition = position;
+                this.forceUpdate();
             }
         }
-    }
+    };
 
-    dropPiece(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    dropPiece = (e: React.MouseEvent<HTMLDivElement>) => {
         if (this.grabbedPiece) {
-            if (this.grabbedElm) {
-                this.grabbedElm.style.display = 'block';
-            }
-            const currPosition = this.grabbedPieceCurrPosition;
+            this.showGrabbedElement();
             const targetPosition = this.getPositionAtCoord(
                 this.boundX(e.clientX),
                 this.boundY(e.clientY)
             );
-
-            this.gameState.makeMove(currPosition, targetPosition);
-
-            this.grabbedPiece = null;
-            this.highlightPositions = [];
-            this.forceUpdate();
+            if (this.highlightPositions.includes(targetPosition)) {
+                this.gameState.makeMove(
+                    this.grabbedPieceCurrPosition,
+                    targetPosition
+                );
+            }
+            this.resetGrab();
         }
-    }
+    };
 
-    boundX(x: number) {
-        const minX = this.boardRef.current?.offsetLeft ?? 0;
-        // x = x;
-        x = x < minX ? minX : x;
-        x = x > minX + 701 ? minX + 701 : x;
-        return x;
-    }
+    toggleBoardColor = () => {
+        this.bottomColor =
+            this.bottomColor === ChessColor.Light
+                ? ChessColor.Dark
+                : ChessColor.Light;
+        this.forceUpdate();
+    };
 
-    boundY(y: number) {
-        const minY = this.boardRef.current?.offsetTop ?? 0;
-        // y = y;
-        y = y < minY ? minY : y;
-        y = y > minY + 701 ? minY + 701 : y;
-        return y;
-    }
+    undoLastMove = () => {
+        this.gameState.takeBack();
+        this.forceUpdate();
+    };
+
+    renderMove = (move: IMove) => (
+        <li
+            key={`${move.position}-${move.piece.color}-${move.piece.name}-${move.target}`}
+        >
+            {`${move.position} ${move.piece.color} ${move.piece.name} ${move.type.toLowerCase()} ${move.target}`}
+        </li>
+    );
+
+    hideGrabbedElement = () => {
+        if (this.grabbedElm) this.grabbedElm.style.display = 'none';
+    };
+
+    showGrabbedElement = () => {
+        if (this.grabbedElm) this.grabbedElm.style.display = 'block';
+    };
+
+    resetGrab = () => {
+        this.grabbedPiece = null;
+        this.highlightPositions = [];
+        this.forceUpdate();
+    };
+
+    boundX = (x: number) =>
+        this.boundCoordinate(x, this.boardRef.current?.offsetLeft ?? 0);
+    boundY = (y: number) =>
+        this.boundCoordinate(y, this.boardRef.current?.offsetTop ?? 0);
+
+    boundCoordinate = (coord: number, min: number) =>
+        Math.max(min, Math.min(coord, min + 701));
 
     getPositionAtCoord(x: number, y: number) {
         const minX = this.boardRef.current?.offsetLeft ?? 0;
         const minY = this.boardRef.current?.offsetTop ?? 0;
-
-        let i = Math.floor((x - minX) / 100);
-        let j = Math.floor((y - minY) / 100);
-        return BoardCoordinateSystem.gridCoordToPosition({
-            rankIndex: j,
-            fileIndex: i,
+        const fileIndex = Math.floor((x - minX) / 100);
+        const rankIndex = Math.floor((y - minY) / 100);
+        return ChessPositionHelper.gridCoordToPosition({
+            rankIndex,
+            fileIndex,
             bottomColor: this.bottomColor,
         });
+    }
+
+    isGrabbable(element: HTMLElement): boolean {
+        return !this.grabbedPiece && element.classList.contains('chess-piece');
     }
 }

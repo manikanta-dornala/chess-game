@@ -1,17 +1,16 @@
 .boardSquare {
     display: grid;
     place-content: center;
-    height: 100.5px;
-    width: 100.5px;
-    /* border: none; */
+    height: calc(var(--square-size)); /* Adjust for border */
+    width: calc(var(--square-size));
 }
 
 .lightSquare {
-    background-color: #ececd0;
+    background-color: var(--light-square-color);
 }
 
 .darkSquare {
-    background-color: #779656;
+    background-color: var(--dark-square-color);
 }
 
 .squareLabel {
@@ -19,7 +18,8 @@
     position: absolute;
     font-size: x-small;
     opacity: 50%;
-    padding-left: 2px;
+    padding-left: 0.1em;
+    color: var(--text-color-light);
     -webkit-user-select: none; /* Safari */
     -moz-user-select: none; /* Firefox */
     -ms-user-select: none; /* IE10+/Edge */
@@ -28,46 +28,14 @@
 
 .highlight-border-light {
     box-sizing: border-box;
-    border: 1px solid lightgreen;
-    box-shadow:
-        0 0 25px 5px lightgreen inset,
-        0 0 30px 7px seagreen inset;
+    border: 1px solid var(--highlight-border-color);
+    box-shadow: var(--highlight-shadow-light);
     z-index: 45;
 }
 
 .highlight-border-dark {
     box-sizing: border-box;
-    border: 1px solid lightgreen;
-    box-shadow:
-        0 0 30px 7px lightgreen inset,
-        0 0 25px 5px wheat inset;
+    border: 1px solid var(--highlight-border-color);
+    box-shadow: var(--highlight-shadow-dark);
     z-index: 45;
-}
-
-.highlight {
-    height: 10px;
-    width: 10px;
-    background-position: center;
-    background-repeat: no-repeat;
-    z-index: 100;
-    border-radius: 50%;
-    position: fixed;
-    margin-top: 45px;
-    margin-left: 45px;
-}
-
-.highlight-light {
-    background-image: radial-gradient(
-        circle at center,
-        #779656 0,
-        #ececd0 100%
-    );
-}
-
-.highlight-dark {
-    background-image: radial-gradient(
-        circle at center,
-        #ececd0 0,
-        #779656 100%
-    );
 }

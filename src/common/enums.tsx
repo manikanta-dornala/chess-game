@@ -3,8 +3,6 @@ export enum ChessColor {
     Dark = 'dark',
 }
 
-export enum BS {}
-
 export enum PieceName {
     Pawn = 'pawn',
     Knight = 'knight',

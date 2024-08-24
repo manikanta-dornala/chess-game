@@ -1,5 +1,6 @@
-import { BoardCoordinateSystem, initial_piece_positions } from './constants';
+import { ChessPositionHelper } from './chess-position-helper';
 import { ChessColor, ChessDirection, MoveType, PieceName } from './enums';
+import { InitialPiecePositions } from './initial-piece-positions';
 import { IPiece } from './piece';
 
 export interface IMove {
@@ -21,9 +22,9 @@ export class GameState {
     boards: Array<{ [position: string]: IPiece | null }> = []; // History of board states for undo functionality
 
     constructor() {
-        this.board = { ...initial_piece_positions }; // Initialize the board with the default piece positions
-        BoardCoordinateSystem.ranks.forEach((rank) =>
-            BoardCoordinateSystem.files.forEach((file) => {
+        this.board = { ...InitialPiecePositions }; // Initialize the board with the default piece positions
+        ChessPositionHelper.ranks.forEach((rank) =>
+            ChessPositionHelper.files.forEach((file) => {
                 const position = `${file}${rank}`;
                 this.validSquares.add(position); // Register each position as a valid square
                 if (!this.board[position]) {

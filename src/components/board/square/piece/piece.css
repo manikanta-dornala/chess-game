@@ -1,45 +1,56 @@
 .chess-piece {
-    height: 100px;
-    width: 100px;
+    height: var(--piece-size);
+    width: var(--piece-size);
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 80px;
+    background-size: var(--piece-background-size);
     z-index: 1;
 }
 
 .light-pawn {
     background-image: url('./assets/white-pawn.png');
 }
+
 .dark-pawn {
     background-image: url('./assets/black-pawn.png');
 }
+
 .light-rook {
     background-image: url('./assets/white-rook.png');
 }
+
 .dark-rook {
     background-image: url('./assets/black-rook.png');
 }
+
 .light-knight {
     background-image: url('./assets/white-knight.png');
 }
+
 .dark-knight {
     background-image: url('./assets/black-knight.png');
 }
+
 .light-bishop {
     background-image: url('./assets/white-bishop.png');
 }
+
 .dark-bishop {
     background-image: url('./assets/black-bishop.png');
 }
+
 .light-king {
     background-image: url('./assets/white-king.png');
 }
+
 .dark-king {
     background-image: url('./assets/black-king.png');
 }
+
 .light-queen {
     background-image: url('./assets/white-queen.png');
 }
+
 .dark-queen {
     background-image: url('./assets/black-queen.png');
 }

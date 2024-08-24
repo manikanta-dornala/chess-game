@@ -1,9 +1,9 @@
 .board {
     display: grid;
     background-color: black;
-    width: 804px;
-    height: 804px;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    width: var(--board-size);
+    height: var(--board-size);
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
     border: 1px solid black;
 }
