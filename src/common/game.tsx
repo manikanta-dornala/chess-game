@@ -18,6 +18,7 @@ export class GameState {
     };
     validSquares: Set<string> = new Set();
     moves: Array<IMove> = [];
+    boards: Array<{ [position: string]: IPiece | null }> = [];
     constructor() {
         let initialPositions = initial_piece_positions;
         this.board = {};
@@ -34,6 +35,19 @@ export class GameState {
         }
     }
 
+    takeBack() {
+        if (this.boards.length > 0) {
+            this.moves.pop();
+            const lastboard = this.boards.pop();
+            if (lastboard) this.board = lastboard;
+
+            this.turn =
+                this.turn === ChessColor.Light
+                    ? ChessColor.Dark
+                    : ChessColor.Light;
+        }
+    }
+
     makeMove(curr: string, target: string) {
         const currPiece = this.board[curr];
         if (!currPiece) return; // no piece to move
@@ -44,6 +58,7 @@ export class GameState {
         );
 
         if (moves.length) {
+            this.boards.push(structuredClone(this.board));
             const move = moves[0];
             this.board[target] = currPiece;
             this.board[curr] = null;

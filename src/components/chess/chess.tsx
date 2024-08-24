@@ -56,6 +56,16 @@ export default class ChessComponent extends React.Component {
                         Flip Board
                     </button>
                     <p>Current turn: {this.gameState.turn}</p>
+
+                    <button
+                        onClick={(e) => {
+                            this.gameState.takeBack();
+                            this.forceUpdate();
+                        }}
+                        disabled={this.gameState.boards.length === 0}
+                    >
+                        Undo last move
+                    </button>
                     {this.gameState.moves.length ? <p>Moves</p> : ''}
                     <ul>
                         {this.gameState.moves.map((move: IMove) => {
