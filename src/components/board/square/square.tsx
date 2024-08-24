@@ -31,8 +31,8 @@ export default class SquareComponent extends React.Component<
         let id = 'board-square-' + this.state.position + '-' + this.state.color;
         let squareClass =
             this.state.color === ChessColor.Light
-                ? 'lightSquare'
-                : 'darkSquare';
+                ? 'lightSquare boardSquare '
+                : 'darkSquare boardSquare ';
         let txtClr = this.state.color === ChessColor.Light ? 'black' : 'white';
 
         const piece = this.props.gameState.board[this.props.position];
@@ -45,27 +45,34 @@ export default class SquareComponent extends React.Component<
                 ></PieceComponent>
             );
         }
-        let highlightcomp = <div></div>;
+        let highlightCls = '';
         if (this.props.highlight) {
-            highlightcomp = (
-                <div
-                    className={
-                        'highlight ' +
-                        (this.state.color === ChessColor.Light
-                            ? 'highlight-light'
-                            : 'highlight-dark')
-                    }
-                ></div>
-            );
+            highlightCls =
+                this.state.color === ChessColor.Light
+                    ? 'highlight-border-light'
+                    : 'highlight-border-dark';
         }
+        // let highlightcomp = <div></div>;
+        // if (this.props.highlight) {
+        //     highlightcomp = (
+        //         <div
+        //             className={
+        //                 'highlight ' +
+        //                 (this.state.color === ChessColor.Light
+        //                     ? 'highlight-light'
+        //                     : 'highlight-dark')
+        //             }
+        //         ></div>
+        //     );
+        // }
         return (
             <div id={id}>
                 <span className="squareLabel" style={{ color: txtClr }}>
                     {this.state.position}
                 </span>
-                <div className={squareClass + ' boardSquare '}>
+                <div className={squareClass + highlightCls}>
                     {piececomp}
-                    {highlightcomp}
+                    {/* {highlightcomp} */}
                 </div>
             </div>
         );
