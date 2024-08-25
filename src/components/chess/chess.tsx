@@ -1,12 +1,12 @@
 import React, { createRef } from 'react';
 import BoardComponent from '../board/board';
 import { GameState } from '../../common/game';
-import { IPiece } from '../../common/piece';
+import { IMove, IPiece } from '../../common/interfaces';
 import { ChessColor } from '../../common/enums';
 
 import './chess.css';
 import { PositionHelper } from '../../common/position-helper';
-import { IMove, MovesHelper } from '../../common/moves-helper';
+import { MovesHelper } from '../../common/moves-helper';
 
 export default class ChessComponent extends React.Component {
     private boardRef = createRef<HTMLDivElement>();

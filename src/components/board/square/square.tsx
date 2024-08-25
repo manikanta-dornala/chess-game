@@ -3,13 +3,14 @@ import './square.css';
 import { ChessColor } from '../../../common/enums';
 import PieceComponent from './piece/piece';
 import { PositionHelper } from '../../../common/position-helper';
-import { IPiece } from '../../../common/piece';
+import { IPiece } from '../../../common/interfaces';
 
 interface ISquareProps {
     position: string;
     piece: IPiece | null;
     highlight: boolean;
-    grabbedPieceOpacity: number;
+    isKingInCheck: boolean;
+    isPieceGrabbed: boolean;
 }
 
 interface ISquareState {
@@ -25,12 +26,8 @@ export default class SquareComponent extends React.Component<
     };
 
     render(): React.ReactNode {
-        const {
-            position,
-            piece,
-            highlight,
-            grabbedPieceOpacity = 1,
-        } = this.props;
+        const { position, piece, highlight, isKingInCheck, isPieceGrabbed } =
+            this.props;
         const { color } = this.state;
 
         const squareClass =
@@ -38,12 +35,15 @@ export default class SquareComponent extends React.Component<
                 ? 'lightSquare boardSquare'
                 : 'darkSquare boardSquare';
 
-        const highlightClass = highlight
-            ? color === ChessColor.Light
-                ? 'highlight-border-light'
-                : 'highlight-border-dark'
-            : '';
+        const highlightClass = isKingInCheck
+            ? 'highlight-border-king-check'
+            : highlight
+              ? color === ChessColor.Light
+                  ? 'highlight-border-light'
+                  : 'highlight-border-dark'
+              : '';
 
+        const pieceOpacity = isPieceGrabbed ? 0.2 : 1;
         return (
             <div id={`board-square-${position}-${color}`}>
                 <span
@@ -59,7 +59,7 @@ export default class SquareComponent extends React.Component<
                         <PieceComponent
                             name={piece.name}
                             color={piece.color}
-                            opacity={grabbedPieceOpacity}
+                            opacity={pieceOpacity}
                         />
                     )}
                 </div>

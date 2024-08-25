@@ -39,3 +39,10 @@
     box-shadow: var(--highlight-shadow-dark);
     z-index: 45;
 }
+
+.highlight-border-king-check {
+    box-sizing: border-box;
+    border: 1px solid var(--highlight-border-color);
+    box-shadow: var(--highlight-shadow-check);
+    z-index: 45;
+}

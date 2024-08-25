@@ -9,6 +9,8 @@
         0 0 2em 0.7em seagreen inset;
     --highlight-shadow-dark: 0 0 2em 0.7em lightgreen inset,
         0 0 2em 0.5em wheat inset;
+    --highlight-shadow-check: 0 0 2em 0.7em maroon inset,
+        0 0 2em 0.5em red inset;
     --piece-size: 100px;
     --piece-background-size: 80px;
     --text-color-light: black;

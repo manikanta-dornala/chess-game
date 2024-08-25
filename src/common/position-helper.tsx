@@ -1,9 +1,12 @@
-import { ChessColor } from './enums';
+import { ChessColor, PieceName } from './enums';
+import { IBoard } from './interfaces';
+import { cache } from './utils';
 
 export abstract class PositionHelper {
     public static files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     public static ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
 
+    @cache
     public static gridCoordToPosition({
         rankIndex,
         fileIndex,
@@ -21,6 +24,7 @@ export abstract class PositionHelper {
             : this.files[7 - fileIndex] + this.ranks[7 - rankIndex];
     }
 
+    @cache
     public static getSquareColor(position: string): ChessColor {
         const xPos = position[0];
         const yPos = parseInt(position[1], 10);
@@ -40,4 +44,20 @@ export abstract class PositionHelper {
             })
         )
     );
+
+    @cache
+    public static getKingPosition(
+        turn: ChessColor,
+        board: IBoard
+    ): string | null {
+        let kingPosition = null;
+        this.validSquares.forEach((position) => {
+            const piece = board[position];
+            if (piece?.name === PieceName.King && piece?.color === turn) {
+                kingPosition = position;
+            }
+        });
+        // console.log('hi');
+        return kingPosition;
+    }
 }

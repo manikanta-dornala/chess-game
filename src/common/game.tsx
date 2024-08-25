@@ -1,11 +1,8 @@
 import { ChessColor, MoveType } from './enums';
 import { InitialPiecePositions } from './initial-piece-positions';
-import { IMove, MovesHelper } from './moves-helper';
-import { IPiece } from './piece';
-
-export interface IBoard {
-    [position: string]: IPiece | null;
-}
+import { MovesHelper } from './moves-helper';
+import { IBoard, IMove } from './interfaces';
+import { PositionHelper } from './position-helper';
 
 export class GameState {
     board: IBoard; // Represents the current state of the chessboard
@@ -42,13 +39,14 @@ export class GameState {
             this.lastMove()
         ).find((move) => move.target === target);
         if (validMove) {
-            this.boards.push({ ...this.board }); // Save the current board state
-            this.board[target] = currPiece; // Move the piece to the target square
-            this.board[curr] = null; // Clear the original square
+            const newBoard = { ...this.board }; // Make a copy of the board
+            this.boards.push(this.board); // Save the current board state
+            newBoard[target] = currPiece; // Move the piece to the target square
+            newBoard[curr] = null; // Clear the original square
 
             if (validMove.type === MoveType.EnPassant) {
                 const lastMove = this.lastMove();
-                if (lastMove) this.board[lastMove.target] = null; // Handle En Passant capture
+                if (lastMove) newBoard[lastMove.target] = null; // Handle En Passant capture
             }
 
             this.turn =
@@ -56,11 +54,12 @@ export class GameState {
                     ? ChessColor.Dark
                     : ChessColor.Light; // Switch turn to the other player
             this.moves.push(validMove); // Record the move
+            this.board = newBoard;
         }
     }
 
     // Returns the last move that was made
-    lastMove(): IMove | undefined {
-        return this.moves[this.moves.length - 1];
+    lastMove(): IMove | null {
+        return this.moves[this.moves.length - 1] ?? null;
     }
 }
