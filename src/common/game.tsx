@@ -1,7 +1,7 @@
-import { ChessColor, MoveType } from './enums';
+import { ChessColor, MoveType, PieceName } from './enums';
 import { InitialPiecePositions } from './initial-piece-positions';
 import { MovesHelper } from './moves-helper';
-import { IBoard, IMove } from './interfaces';
+import { IBoard, ICastlingRights, IMove } from './interfaces';
 import { PositionHelper } from './position-helper';
 
 export class GameState {
@@ -9,9 +9,20 @@ export class GameState {
     turn: ChessColor = ChessColor.Light; // Tracks whose turn it is, starts with Light
     moves: Array<IMove> = []; // Tracks all moves made in the game
     boards: Array<IBoard> = []; // History of board states for undo functionality
-
+    castlingRights: ICastlingRights = {
+        [ChessColor.Light]: true,
+        [ChessColor.Dark]: true,
+    };
     constructor() {
         this.board = { ...InitialPiecePositions }; // Initialize the board with the default piece positions
+        this.board['lightCastlingRight'] = {
+            name: PieceName.King,
+            color: ChessColor.Light,
+        };
+        this.board['darkCastlingRight'] = {
+            name: PieceName.King,
+            color: ChessColor.Dark,
+        };
     }
 
     // Reverts the game state to the previous turn
@@ -36,7 +47,11 @@ export class GameState {
             currPiece,
             curr,
             this.board,
-            this.lastMove()
+            this.lastMove(),
+            {
+                [ChessColor.Light]: this.board['lightCastlingRight'] !== null,
+                [ChessColor.Dark]: this.board['darkCastlingRight'] !== null,
+            }
         ).find((move) => move.target === target);
         if (validMove) {
             const newBoard = { ...this.board }; // Make a copy of the board
@@ -47,6 +62,31 @@ export class GameState {
             if (validMove.type === MoveType.EnPassant) {
                 const lastMove = this.lastMove();
                 if (lastMove) newBoard[lastMove.target] = null; // Handle En Passant capture
+            }
+
+            if (validMove.type === MoveType.Castling) {
+                if (validMove.target === 'g8') {
+                    newBoard['f8'] = newBoard['h8'];
+                    newBoard['h8'] = null;
+                }
+                if (validMove.target === 'g1') {
+                    newBoard['f1'] = newBoard['h1'];
+                    newBoard['h1'] = null;
+                }
+                if (validMove.target === 'c8') {
+                    newBoard['d8'] = newBoard['a8'];
+                    newBoard['a8'] = null;
+                }
+                if (validMove.target === 'c1') {
+                    newBoard['d1'] = newBoard['a1'];
+                    newBoard['a1'] = null;
+                }
+            }
+
+            if (validMove.piece.name === PieceName.King) {
+                if (this.turn === ChessColor.Light)
+                    newBoard['lightCastlingRight'] = null;
+                else newBoard['darkCastlingRight'] = null;
             }
 
             this.turn =

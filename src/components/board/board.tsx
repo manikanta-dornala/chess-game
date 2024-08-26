@@ -1,24 +1,26 @@
 import React from 'react';
 
 import './board.css';
-import { GameState } from '../../common/game';
 import { ChessColor, PieceName } from '../../common/enums';
 import SquareComponent from './square/square';
 import { PositionHelper } from '../../common/position-helper';
+import { IBoard } from '../../common/interfaces';
 import { MovesHelper } from '../../common/moves-helper';
 
 export default class BoardComponent extends React.Component<{
-    gameState: GameState;
+    board: IBoard;
     bottomColor: ChessColor;
     highlightPositions: Array<string>;
     grabbedPiecePosition: string;
+    isKingInCheck: boolean;
 }> {
     getSquares() {
         const {
-            gameState,
+            board,
             bottomColor,
             highlightPositions,
             grabbedPiecePosition,
+            isKingInCheck,
         } = this.props;
         let squares = [];
         for (let j = 0; j < PositionHelper.ranks.length; j++) {
@@ -28,14 +30,18 @@ export default class BoardComponent extends React.Component<{
                     fileIndex: i,
                     bottomColor: bottomColor,
                 });
-                const piece = gameState.board[position];
+                const piece = board[position];
                 const shouldHighlight = highlightPositions.includes(position);
                 const isPieceAtPositionGrabbed =
                     grabbedPiecePosition === position;
-                const isKingInCheck =
-                    piece?.name === PieceName.King &&
-                    piece?.color === gameState.turn &&
-                    MovesHelper.isKingInCheck(gameState.turn, gameState.board);
+                var foo =
+                    piece?.name === PieceName.King
+                        ? MovesHelper.isKingInCheckAt(
+                              position,
+                              piece?.color,
+                              board
+                          )
+                        : false;
                 squares.push(
                     <SquareComponent
                         key={position}
@@ -43,7 +49,7 @@ export default class BoardComponent extends React.Component<{
                         piece={piece}
                         highlight={shouldHighlight}
                         isPieceGrabbed={isPieceAtPositionGrabbed}
-                        isKingInCheck={isKingInCheck}
+                        isKingInCheck={foo}
                     ></SquareComponent>
                 );
             }

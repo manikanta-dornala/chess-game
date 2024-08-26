@@ -29,10 +29,11 @@ export default class ChessComponent extends React.Component {
                         ref={this.boardRef}
                     >
                         <BoardComponent
-                            gameState={this.gameState}
+                            board={this.gameState.board}
                             highlightPositions={this.highlightPositions}
                             bottomColor={this.bottomColor}
                             grabbedPiecePosition={this.grabbedPieceCurrPosition}
+                            isKingInCheck={this.isKingInCheck()}
                         />
                     </div>
                 </div>
@@ -49,18 +50,14 @@ export default class ChessComponent extends React.Component {
                     <button onClick={this.toggleBoardColor}>Flip Board</button>
                     <p>
                         Current turn: {this.gameState.turn}{' '}
-                        {MovesHelper.isKingInCheck(
-                            this.gameState.turn,
-                            this.gameState.board
-                        )
-                            ? 'check'
-                            : ''}
+                        {this.isKingInCheck() ? 'check' : ''}
                     </p>
                     <p>
                         {MovesHelper.isCheckMate(
                             this.gameState.turn,
                             this.gameState.board,
-                            this.gameState.lastMove()
+                            this.gameState.lastMove(),
+                            this.gameState.castlingRights
                         )
                             ? 'Checkmate'
                             : ''}
@@ -94,7 +91,8 @@ export default class ChessComponent extends React.Component {
                     piece,
                     position,
                     this.gameState.board,
-                    this.gameState.lastMove()
+                    this.gameState.lastMove(),
+                    this.gameState.castlingRights
                 ).map((e) => e.target);
                 this.grabbedPiece = piece;
                 this.grabbedElm = target;
@@ -178,5 +176,12 @@ export default class ChessComponent extends React.Component {
             return { offsetLeft, offsetTop };
         }
         return { offsetLeft: 0, offsetTop: 0 };
+    }
+
+    isKingInCheck() {
+        return MovesHelper.isKingInCheck(
+            this.gameState.turn,
+            this.gameState.board
+        );
     }
 }

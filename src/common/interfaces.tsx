@@ -15,3 +15,13 @@ export interface IMove {
     piece: IPiece;
     position: string;
 }
+
+export interface IMoveSet {
+    file: number;
+    rank: number;
+}
+
+export interface ICastlingRights {
+    [ChessColor.Light]: boolean;
+    [ChessColor.Dark]: boolean;
+}

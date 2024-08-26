@@ -1,6 +1,6 @@
 import { PositionHelper } from './position-helper';
 import { ChessColor, MoveType, PieceName } from './enums';
-import { IBoard, IMove, IPiece } from './interfaces';
+import { IBoard, ICastlingRights, IMove, IPiece } from './interfaces';
 import { PieceMoveSets } from './piece-move-sets';
 import { cache } from './utils';
 
@@ -10,14 +10,16 @@ export abstract class MovesHelper {
         piece: IPiece,
         position: string,
         board: IBoard,
-        lastMove: IMove | null
+        lastMove: IMove | null,
+        castlingRights: ICastlingRights
     ): IMove[] {
         const moves = this.getPossibleMoves(
             turn,
             piece,
             position,
             board,
-            lastMove
+            lastMove,
+            castlingRights
         );
 
         return moves.filter((move) => {
@@ -39,14 +41,15 @@ export abstract class MovesHelper {
         piece: IPiece,
         position: string,
         board: IBoard,
-        lastMove: IMove | null
+        lastMove: IMove | null,
+        castlingRights: ICastlingRights
     ): IMove[] {
         if (turn !== piece.color) return []; // Exit if it's not this piece's turn
 
         const possibleMoves =
             piece.name === PieceName.Pawn
                 ? this.getPawnMoves(piece, position, board, lastMove)
-                : this.getPieceMoves(piece, position, board);
+                : this.getPieceMoves(piece, position, board, castlingRights);
 
         return possibleMoves;
     }
@@ -115,7 +118,8 @@ export abstract class MovesHelper {
     public static getPieceMoves(
         piece: IPiece,
         position: string,
-        board: IBoard
+        board: IBoard,
+        castlingRights: ICastlingRights | null
     ): IMove[] {
         const [file, rank] = [position[0], parseInt(position[1])];
         const moves: IMove[] = [];
@@ -153,17 +157,80 @@ export abstract class MovesHelper {
                     break;
                 } else {
                     // Regular move to an empty square
-                    moves.push({
+                    let move: IMove | null = {
                         piece,
                         type: MoveType.Move,
                         target: targetPos,
                         position,
-                    });
+                    };
+                    if (castlingRights)
+                        move = this.handleCastling(move, board, castlingRights);
+                    if (move) moves.push(move);
                 }
             }
         }
 
         return moves;
+    }
+
+    @cache
+    public static handleCastling(
+        move: IMove,
+        board: IBoard,
+        castlingRights: ICastlingRights
+    ): IMove | null {
+        const { piece, position, target } = move;
+
+        // Check if the move is a king's move for castling
+        if (piece.name === PieceName.King && move.type === MoveType.Move) {
+            if (this.isKingInCheckAt(position, piece.color, board)) return null;
+            const fileDistance = target.charCodeAt(0) - position.charCodeAt(0);
+
+            // Check if the move is a castling move (two squares horizontally)
+            if (Math.abs(fileDistance) === 2) {
+                const rank = position[1];
+                const rookFile = fileDistance > 0 ? 'h' : 'a';
+                const rookPosition = `${rookFile}${rank}`;
+                const rook = board[rookPosition];
+
+                // Ensure the corresponding rook is in place and has not moved
+                if (
+                    rook &&
+                    rook.name === PieceName.Rook &&
+                    rook.color === piece.color &&
+                    castlingRights[piece.color]
+                ) {
+                    // Ensure there are no pieces between the king and the rook
+                    const direction = fileDistance > 0 ? 1 : -1;
+                    for (
+                        let file = position.charCodeAt(0) + direction;
+                        file !== target.charCodeAt(0);
+                        file += direction
+                    ) {
+                        const square = String.fromCharCode(file) + rank;
+                        if (board[square]) return null; // Square is not empty
+                        if (this.isKingInCheckAt(square, piece.color, board))
+                            return null;
+                    }
+
+                    console.log('king is not in check');
+                    // Move the rook to the square next to the king
+                    const rookTarget =
+                        String.fromCharCode(
+                            position.charCodeAt(0) + direction
+                        ) + rank;
+
+                    // Mark the move as castling
+                    move.type = MoveType.Castling;
+
+                    // Return the updated move
+                    return move;
+                }
+            }
+        }
+
+        // Return the original move if it's not a castling move
+        return move;
     }
 
     @cache
@@ -173,28 +240,40 @@ export abstract class MovesHelper {
         console.log('kingPosition', kingPosition);
         if (!kingPosition) return false;
 
+        return this.isKingInCheckAt(kingPosition, turn, board);
+    }
+
+    @cache
+    public static isKingInCheckAt(
+        kingPosition: string,
+        turn: ChessColor,
+        board: IBoard
+    ) {
         // Check if any opposing piece can attack the king's position
         const opponentColor =
             turn === ChessColor.Light ? ChessColor.Dark : ChessColor.Light;
-        for (const position of Object.keys(board)) {
+        let isKingInCheck = false;
+        PositionHelper.validSquares.forEach((position) => {
             const piece = board[position];
             if (piece?.color === opponentColor) {
                 const possibleMoves =
                     piece.name === PieceName.Pawn
                         ? this.getPawnMoves(piece, position, board, null)
-                        : this.getPieceMoves(piece, position, board);
+                        : this.getPieceMoves(piece, position, board, null);
                 if (possibleMoves.map((e) => e.target).includes(kingPosition)) {
-                    return true;
+                    isKingInCheck = true;
+                    return;
                 }
             }
-        }
-        return false;
+        });
+        return isKingInCheck;
     }
 
     public static isCheckMate(
         turn: ChessColor,
         board: IBoard,
-        lastMove: IMove | null
+        lastMove: IMove | null,
+        castlingRights: ICastlingRights
     ): boolean {
         let kingPosition = PositionHelper.getKingPosition(turn, board);
 
@@ -205,7 +284,14 @@ export abstract class MovesHelper {
             const piece = board[position];
             if (piece?.color === turn) {
                 legalMoves = legalMoves.concat(
-                    this.getLegalMoves(turn, piece, position, board, lastMove)
+                    this.getLegalMoves(
+                        turn,
+                        piece,
+                        position,
+                        board,
+                        lastMove,
+                        castlingRights
+                    )
                 );
             }
             if (legalMoves.length > 0) {
