@@ -58,15 +58,29 @@ export default class ChessComponent extends React.Component {
                             />
                         </Popover>
                     )}
+                    {this.isCheckMate() && (
+                        <Popover
+                            show={this.isCheckMate()}
+                            onClose={() => {}}
+                            coord={{
+                                x: this.boardRef.current!.offsetLeft + 275,
+                                y: this.boardRef.current!.offsetTop + 350,
+                            }}
+                        >
+                            <div
+                                className="grid"
+                                style={{ background: 'white', padding: '50px' }}
+                            >
+                                checkmate {this.gameState.turn} king
+                            </div>
+                        </Popover>
+                    )}
                 </div>
                 <div className="info">
                     <button onClick={this.newGame}>New Game</button>
                     <button onClick={this.toggleBoardColor}>Flip Board</button>
-                    <p>
-                        Current turn: {this.gameState.turn}{' '}
-                        {this.isKingInCheck() ? 'check' : ''}
-                    </p>
-                    <p>{this.checkmateMessage()}</p>
+                    <p>Current turn: {this.gameState.turn}</p>
+                    {/* <p>{this.checkmateMessage()}</p> */}
                     <button
                         onClick={this.undoLastMove}
                         disabled={
@@ -251,14 +265,14 @@ export default class ChessComponent extends React.Component {
         );
     }
 
-    private checkmateMessage() {
-        return MovesHelper.isCheckMate(
+    private isCheckMate() {
+        const isCheckMate = MovesHelper.isCheckMate(
             this.gameState.turn,
             this.gameState.board,
             this.gameState.lastMove(),
             this.gameState.castlingRights
-        )
-            ? 'Checkmate'
-            : '';
+        );
+
+        return isCheckMate;
     }
 }
