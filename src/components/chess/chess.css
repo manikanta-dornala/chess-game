@@ -40,4 +40,18 @@
 
 .info {
     grid-column-start: 4;
+    grid-column-end: 5;
+    height: var(--board-size);
+    padding: 12px;
+    border-bottom: 0.5px solid gray;
+    overflow: scroll;
+    word-wrap: break-word;
+    width: 100%;
+}
+
+.moves-table table,
+th,
+td {
+    border: 1px solid gray;
+    padding: 4px;
 }

@@ -1,7 +1,7 @@
 import { ChessColor, MoveType, PieceName } from './enums';
 import { InitialPiecePositions } from './initial-piece-positions';
 import { MovesHelper } from './moves-helper';
-import { IBoard, ICastlingRights, IMove, IPiece } from './interfaces';
+import { IBoard, IMove, IPiece } from './interfaces';
 import { PositionHelper } from './position-helper';
 
 export class GameState {
@@ -9,11 +9,9 @@ export class GameState {
     turn: ChessColor = ChessColor.Light; // Tracks whose turn it is, starts with Light
     moves: Array<IMove> = []; // Tracks all moves made in the game
     boards: Array<IBoard> = []; // History of board states for undo functionality
-    castlingRights: ICastlingRights = {
-        [ChessColor.Light]: true,
-        [ChessColor.Dark]: true,
-    };
-    blockMoves = false;
+    blockMoves = false; // Tracks if game is currently halted for Pawn Promotion
+    halfmoveClock: number = 0; // Counts halfmoves since last capture or pawn move
+    fullmoveNumber: number = 1; // Counts full moves
     constructor() {
         this.board = { ...InitialPiecePositions }; // Initialize the board with the default piece positions
         this.board['lightCastlingRight'] = {
@@ -36,6 +34,12 @@ export class GameState {
                     ? ChessColor.Dark
                     : ChessColor.Light; // Switch turn back to the previous player
             this.blockMoves = false;
+
+            // Update halfmove clock and fullmove number
+            this.halfmoveClock = Math.max(0, this.halfmoveClock - 1);
+            if (this.turn === ChessColor.Dark) {
+                this.fullmoveNumber = Math.max(1, this.fullmoveNumber - 1);
+            }
         }
     }
 
@@ -49,11 +53,7 @@ export class GameState {
             currPiece,
             curr,
             this.board,
-            this.lastMove(),
-            {
-                [ChessColor.Light]: this.board['lightCastlingRight'] !== null,
-                [ChessColor.Dark]: this.board['darkCastlingRight'] !== null,
-            }
+            this.lastMove()
         ).find((move) => move.target === target);
         if (validMove) {
             const newBoard = { ...this.board }; // Make a copy of the board
@@ -85,10 +85,14 @@ export class GameState {
                 }
             }
 
-            if (validMove.piece.name === PieceName.King) {
-                if (this.turn === ChessColor.Light)
+            if (
+                validMove.piece.name === PieceName.King &&
+                validMove.type === MoveType.Move
+            ) {
+                if (validMove.piece.color === ChessColor.Light)
                     newBoard['lightCastlingRight'] = null;
-                else newBoard['darkCastlingRight'] = null;
+                if (validMove.piece.color === ChessColor.Dark)
+                    newBoard['darkCastlingRight'] = null;
             }
 
             if (validMove.piece.name === PieceName.Pawn) {
@@ -100,11 +104,27 @@ export class GameState {
                 }
             }
 
+            // Update halfmove clock
+            if (
+                currPiece.name === PieceName.Pawn ||
+                validMove.type === MoveType.Capture
+            ) {
+                this.halfmoveClock = 0;
+            } else {
+                this.halfmoveClock++;
+            }
+
+            // Update fullmove number
+            if (this.turn === ChessColor.Dark) {
+                this.fullmoveNumber++;
+            }
+
+            // Switch turn to the other player
             if (validMove.type !== MoveType.Promote) {
                 this.turn =
                     this.turn === ChessColor.Light
                         ? ChessColor.Dark
-                        : ChessColor.Light; // Switch turn to the other player
+                        : ChessColor.Light;
             }
 
             this.moves.push(validMove); // Record the move

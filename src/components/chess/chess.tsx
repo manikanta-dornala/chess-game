@@ -9,6 +9,8 @@ import { PositionHelper } from '../../common/position-helper';
 import { MovesHelper } from '../../common/moves-helper';
 
 import './chess.css';
+import { getMovePGN, getPGN } from '../../common/notations/pgn';
+import getFEN from '../../common/notations/fen';
 
 export default class ChessComponent extends React.Component {
     private boardRef = createRef<HTMLDivElement>();
@@ -77,10 +79,16 @@ export default class ChessComponent extends React.Component {
                     )}
                 </div>
                 <div className="info">
-                    <button onClick={this.newGame}>New Game</button>
-                    <button onClick={this.toggleBoardColor}>Flip Board</button>
-                    <p>Current turn: {this.gameState.turn}</p>
-                    {/* <p>{this.checkmateMessage()}</p> */}
+                    <button className="btn" onClick={this.newGame}>
+                        New Game
+                    </button>
+                    <br></br>
+                    <br></br>
+                    <button className="btn" onClick={this.toggleBoardColor}>
+                        Flip Board
+                    </button>
+                    <h3>Current turn</h3>
+                    <p>{this.gameState.turn}</p>
                     <button
                         onClick={this.undoLastMove}
                         disabled={
@@ -90,10 +98,16 @@ export default class ChessComponent extends React.Component {
                     >
                         Undo last move
                     </button>
-                    {this.gameState.moves.length > 0 && <p>Moves</p>}
-                    <ul style={{ height: '50vh', overflow: 'scroll' }}>
-                        {this.gameState.moves.map(this.renderMove)}
-                    </ul>
+                    <div hidden={this.gameState.moves.length === 0}>
+                        <h2>FEN</h2>
+                        <p>{getFEN(this.gameState)}</p>
+                        <h2>Moves</h2>
+                        <h3>PGN</h3>
+                        <p>{getPGN(this.gameState.moves)}</p>
+                        <table className="moves-table">
+                            <tbody>{this.renderMoves()}</tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         );
@@ -110,8 +124,7 @@ export default class ChessComponent extends React.Component {
                     piece,
                     position,
                     this.gameState.board,
-                    this.gameState.lastMove(),
-                    this.gameState.castlingRights
+                    this.gameState.lastMove()
                 ).map((move) => move.target);
 
                 this.grabbedPiece = piece;
@@ -194,13 +207,28 @@ export default class ChessComponent extends React.Component {
         this.forceUpdate();
     };
 
-    private renderMove = (move: IMove) => (
-        <li
-            key={`${move.position}-${move.piece.color}-${move.piece.name}-${move.target}`}
-        >
-            {`${move.position} ${move.piece.color} ${move.piece.name} ${move.type.toLowerCase()} ${move.target}`}
-        </li>
-    );
+    renderMoves(): React.ReactNode[] {
+        let blackMoves = 1;
+        const moves: React.ReactNode[] = [];
+
+        this.gameState.moves.forEach((move) => {
+            moves.push(
+                <tr
+                    key={`${move.position}-${move.piece.color}-${move.piece.name}-${move.target}`}
+                >
+                    <td>{blackMoves}</td>
+                    <td>{getMovePGN(move)}</td>{' '}
+                    <td>
+                        {`${move.position} ${move.piece.color} ${move.piece.name} ${move.type.toLowerCase()} ${move.target}`}
+                    </td>
+                </tr>
+            );
+            if (move.piece.color === ChessColor.Dark) {
+                blackMoves += 1;
+            }
+        });
+        return moves;
+    }
 
     private resetGrab() {
         this.grabbedPiece = null;

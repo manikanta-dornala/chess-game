@@ -10,16 +10,14 @@ export abstract class MovesHelper {
         piece: IPiece,
         position: string,
         board: IBoard,
-        lastMove: IMove | null,
-        castlingRights: ICastlingRights | null
+        lastMove: IMove | null
     ): IMove[] {
         const moves = this.getPossibleMoves(
             turn,
             piece,
             position,
             board,
-            lastMove,
-            castlingRights
+            lastMove
         );
 
         return moves.filter((move) => {
@@ -41,8 +39,7 @@ export abstract class MovesHelper {
         piece: IPiece,
         position: string,
         board: IBoard,
-        lastMove: IMove | null,
-        castlingRights: ICastlingRights | null
+        lastMove: IMove | null
     ): IMove[] {
         if (turn !== piece.color) return []; // Exit if it's not this piece's turn
 
@@ -52,9 +49,9 @@ export abstract class MovesHelper {
                 : this.getPieceMoves(piece, position, board);
 
         if (
-            castlingRights &&
-            castlingRights[turn] &&
-            piece.name === PieceName.King
+            board[turn + 'CastlingRight'] &&
+            piece.name === PieceName.King &&
+            piece.color === turn
         ) {
             this.getCastlingMoves(turn, board).forEach((move) =>
                 possibleMoves.push(move)
@@ -285,14 +282,7 @@ export abstract class MovesHelper {
             const piece = board[position];
             if (piece?.color === turn) {
                 legalMoves = legalMoves.concat(
-                    this.getLegalMoves(
-                        turn,
-                        piece,
-                        position,
-                        board,
-                        lastMove,
-                        null
-                    )
+                    this.getLegalMoves(turn, piece, position, board, lastMove)
                 );
             }
             if (legalMoves.length > 0) {
