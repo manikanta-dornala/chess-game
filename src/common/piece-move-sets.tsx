@@ -33,8 +33,6 @@ export const PieceMoveSets: Record<PieceName, IMoveSet[]> = {
         { file: 1, rank: -1 },
         { file: -1, rank: 1 },
         { file: -1, rank: -1 },
-        { file: 2, rank: 0 }, // for castling
-        { file: -2, rank: 0 }, // for castling
     ],
     [PieceName.Knight]: [
         { file: 2, rank: 1 },

@@ -269,8 +269,7 @@ export default class ChessComponent extends React.Component {
         const isCheckMate = MovesHelper.isCheckMate(
             this.gameState.turn,
             this.gameState.board,
-            this.gameState.lastMove(),
-            this.gameState.castlingRights
+            this.gameState.lastMove()
         );
 
         return isCheckMate;
