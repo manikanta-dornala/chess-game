@@ -29,7 +29,6 @@ export abstract class PositionHelper {
         position: string,
         bottomColor: ChessColor
     ) {
-        if (!this.validSquares.has(position)) return null;
         const file = position[0];
         const rank = position[1];
         return bottomColor === ChessColor.Light

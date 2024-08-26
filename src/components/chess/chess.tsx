@@ -1,27 +1,26 @@
-import PawnPromotion from '../pawn-promotion-popover/pawn-promotion';
 import React, { createRef } from 'react';
+import PawnPromotion from '../pawn-promotion-popover/pawn-promotion';
 import BoardComponent from '../board/board';
+import Popover from '../pawn-promotion-popover/popover';
 import { GameState } from '../../common/game';
 import { IMove, IPiece } from '../../common/interfaces';
 import { ChessColor, MoveType, PieceName } from '../../common/enums';
-
-import './chess.css';
 import { PositionHelper } from '../../common/position-helper';
 import { MovesHelper } from '../../common/moves-helper';
-import Popover from '../pawn-promotion-popover/popover';
+
+import './chess.css';
 
 export default class ChessComponent extends React.Component {
     private boardRef = createRef<HTMLDivElement>();
-    grabbedPiece: IPiece | null = null;
-    grabbedPieceCurrPosition: string = '';
-    gameState = new GameState();
-    highlightPositions: string[] = [];
-    grabbedElm: HTMLElement | null = null;
-    bottomColor = ChessColor.Light;
+    private grabbedPiece: IPiece | null = null;
+    private grabbedPieceCurrPosition: string = '';
+    private gameState = new GameState();
+    private highlightPositions: string[] = [];
+    private bottomColor = ChessColor.Light;
 
-    showPawnPromotionLogic = false;
-    pawnPromotionPosition: string | null = null;
-    pawnPromotionCoord: { x: number; y: number } | null = null;
+    private showPawnPromotionLogic = false;
+    private pawnPromotionPosition: string | null = null;
+    private pawnPromotionCoord: { x: number; y: number } | null = null;
 
     constructor(props: any) {
         super(props);
@@ -54,39 +53,26 @@ export default class ChessComponent extends React.Component {
                             coord={this.pawnPromotionCoord}
                         >
                             <PawnPromotion
+                                color={this.gameState.turn}
                                 onSelect={this.handlePromotionSelect}
                             />
                         </Popover>
                     )}
                 </div>
                 <div className="info">
-                    <button
-                        onClick={(e) => {
-                            this.gameState = new GameState();
-                            this.forceUpdate();
-                        }}
-                    >
-                        New Game
-                    </button>
-                    <p></p>
+                    <button onClick={this.newGame}>New Game</button>
                     <button onClick={this.toggleBoardColor}>Flip Board</button>
                     <p>
                         Current turn: {this.gameState.turn}{' '}
                         {this.isKingInCheck() ? 'check' : ''}
                     </p>
-                    <p>
-                        {MovesHelper.isCheckMate(
-                            this.gameState.turn,
-                            this.gameState.board,
-                            this.gameState.lastMove(),
-                            this.gameState.castlingRights
-                        )
-                            ? 'Checkmate'
-                            : ''}
-                    </p>
+                    <p>{this.checkmateMessage()}</p>
                     <button
                         onClick={this.undoLastMove}
-                        disabled={!this.gameState.boards.length}
+                        disabled={
+                            !this.gameState.boards.length ||
+                            this.showPawnPromotionLogic
+                        }
                     >
                         Undo last move
                     </button>
@@ -99,13 +85,10 @@ export default class ChessComponent extends React.Component {
         );
     }
 
-    grabPiece = (e: React.MouseEvent<HTMLDivElement>) => {
+    private grabPiece = (e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
         if (this.isGrabbable(target)) {
-            const position = this.getPositionAtCoord(
-                this.boundX(e.clientX),
-                this.boundY(e.clientY)
-            );
+            const position = this.getPositionAtCoord(e.clientX, e.clientY);
             const piece = this.gameState.board[position];
             if (piece) {
                 this.highlightPositions = MovesHelper.getLegalMoves(
@@ -115,20 +98,20 @@ export default class ChessComponent extends React.Component {
                     this.gameState.board,
                     this.gameState.lastMove(),
                     this.gameState.castlingRights
-                ).map((e) => e.target);
+                ).map((move) => move.target);
+
                 this.grabbedPiece = piece;
-                this.grabbedElm = target;
                 this.grabbedPieceCurrPosition = position;
                 this.forceUpdate();
             }
         }
     };
 
-    dropPiece = (e: React.MouseEvent<HTMLDivElement>) => {
+    private dropPiece = (e: React.MouseEvent<HTMLDivElement>) => {
         if (this.grabbedPiece) {
             const targetPosition = this.getPositionAtCoord(
-                this.boundX(e.clientX),
-                this.boundY(e.clientY)
+                e.clientX,
+                e.clientY
             );
             if (this.highlightPositions.includes(targetPosition)) {
                 const move = this.gameState.makeMove(
@@ -143,50 +126,61 @@ export default class ChessComponent extends React.Component {
         this.resetGrab();
     };
 
-    togglePawnPromotion(position: string) {
-        console.log('toggle at', position);
+    private togglePawnPromotion(position: string) {
         this.pawnPromotionPosition = position;
         this.pawnPromotionCoord = this.getCoordAtPosition(position);
-        if (this.pawnPromotionCoord) this.showPawnPromotionLogic = true;
+        this.pawnPromotionCoord = this.boundPawnPromitionCoord(
+            this.pawnPromotionCoord
+        );
+        this.showPawnPromotionLogic = !!this.pawnPromotionCoord;
         this.forceUpdate();
     }
 
-    handlePromotionSelect(pieceName: PieceName) {
-        console.log(
-            'promoted to',
-            pieceName,
-            'at',
-            this.pawnPromotionPosition,
-            this.pawnPromotionCoord,
-            this.gameState
-        );
+    private boundPawnPromitionCoord(coord: { x: number; y: number }) {
+        const offsetTop = this.boardRef.current!.offsetTop;
+        coord.y += 50;
+        coord.x += 50;
+        if (coord.y > offsetTop + 600) {
+            coord.y = coord.y - 250;
+        }
+        return coord;
+    }
+
+    private handlePromotionSelect(pieceName: PieceName) {
         if (this.pawnPromotionPosition) {
-            console.log(pieceName);
             this.gameState.handlePawnPromotion(this.pawnPromotionPosition, {
                 name: pieceName,
                 color: this.gameState.turn,
             });
-            this.pawnPromotionCoord = null;
-            this.pawnPromotionPosition = null;
-            this.showPawnPromotionLogic = false;
-            this.forceUpdate();
+            this.resetPawnPromotion();
         }
     }
 
-    toggleBoardColor = () => {
+    private toggleBoardColor = () => {
         this.bottomColor =
             this.bottomColor === ChessColor.Light
                 ? ChessColor.Dark
                 : ChessColor.Light;
+        if (this.pawnPromotionPosition) {
+            this.togglePawnPromotion(this.pawnPromotionPosition);
+        }
         this.forceUpdate();
     };
 
-    undoLastMove = () => {
+    private undoLastMove = () => {
+        this.resetPawnPromotion();
         this.gameState.takeBack();
+        this.resetPawnPromotion();
         this.forceUpdate();
     };
 
-    renderMove = (move: IMove) => (
+    private newGame = () => {
+        this.resetPawnPromotion();
+        this.gameState = new GameState();
+        this.forceUpdate();
+    };
+
+    private renderMove = (move: IMove) => (
         <li
             key={`${move.position}-${move.piece.color}-${move.piece.name}-${move.target}`}
         >
@@ -194,26 +188,27 @@ export default class ChessComponent extends React.Component {
         </li>
     );
 
-    resetGrab = () => {
+    private resetGrab() {
         this.grabbedPiece = null;
         this.grabbedPieceCurrPosition = '';
         this.highlightPositions = [];
         this.forceUpdate();
-    };
+    }
 
-    boundX = (x: number) =>
-        this.boundCoordinate(x, this.getBoardDimensions().offsetLeft ?? 0);
-    boundY = (y: number) =>
-        this.boundCoordinate(y, this.getBoardDimensions().offsetTop ?? 0);
+    private resetPawnPromotion() {
+        this.pawnPromotionCoord = null;
+        this.pawnPromotionPosition = null;
+        this.showPawnPromotionLogic = false;
+        this.forceUpdate();
+    }
 
-    boundCoordinate = (coord: number, min: number) =>
-        Math.max(min, Math.min(coord, min + 701));
-
-    getPositionAtCoord(x: number, y: number) {
-        const minX = this.boardRef.current?.offsetLeft ?? 0;
-        const minY = this.boardRef.current?.offsetTop ?? 0;
-        const fileIndex = Math.floor((x - minX) / 100);
-        const rankIndex = Math.floor((y - minY) / 100);
+    private getPositionAtCoord(x: number, y: number) {
+        const fileIndex = Math.floor(
+            (this.boundX(x) - this.boardRef.current!.offsetLeft) / 100
+        );
+        const rankIndex = Math.floor(
+            (this.boundY(y) - this.boardRef.current!.offsetTop) / 100
+        );
         return PositionHelper.gridCoordToPosition({
             rankIndex,
             fileIndex,
@@ -221,38 +216,49 @@ export default class ChessComponent extends React.Component {
         });
     }
 
-    getCoordAtPosition(position: string) {
+    private getCoordAtPosition(position: string) {
         const indices = PositionHelper.getPositionToCoord(
             position,
             this.bottomColor
         );
-        if (indices) {
-            const minX = this.boardRef.current?.offsetLeft ?? 0;
-            const minY = this.boardRef.current?.offsetTop ?? 0;
-            return {
-                x: minX + 100 * indices.x,
-                y: minY + 100 * indices.y,
-            };
-        }
-        return null;
+        const offsetLeft = this.boardRef.current!.offsetLeft;
+        const offsetTop = this.boardRef.current!.offsetTop;
+        return {
+            x: offsetLeft + 100 * indices.x,
+            y: offsetTop + 100 * indices.y,
+        };
     }
 
-    isGrabbable(element: HTMLElement): boolean {
+    private boundX = (x: number) =>
+        Math.max(
+            this.boardRef.current!.offsetLeft,
+            Math.min(x, this.boardRef.current!.offsetLeft + 701)
+        );
+    private boundY = (y: number) =>
+        Math.max(
+            this.boardRef.current!.offsetTop,
+            Math.min(y, this.boardRef.current!.offsetTop + 701)
+        );
+
+    private isGrabbable(element: HTMLElement) {
         return !this.grabbedPiece && element.classList.contains('chess-piece');
     }
 
-    private getBoardDimensions() {
-        if (this.boardRef.current) {
-            const { offsetLeft, offsetTop } = this.boardRef.current;
-            return { offsetLeft, offsetTop };
-        }
-        return { offsetLeft: 0, offsetTop: 0 };
-    }
-
-    isKingInCheck() {
+    private isKingInCheck() {
         return MovesHelper.isKingInCheck(
             this.gameState.turn,
             this.gameState.board
         );
+    }
+
+    private checkmateMessage() {
+        return MovesHelper.isCheckMate(
+            this.gameState.turn,
+            this.gameState.board,
+            this.gameState.lastMove(),
+            this.gameState.castlingRights
+        )
+            ? 'Checkmate'
+            : '';
     }
 }

@@ -7,16 +7,36 @@ interface IPieceProps {
     color: ChessColor;
     opacity?: number; // Add this optional prop
 }
+const pieceImgs = {
+    [ChessColor.Light]: {
+        [PieceName.Queen]: '♕',
+        [PieceName.Rook]: '♖',
+        [PieceName.Bishop]: '♗',
+        [PieceName.Knight]: '♘',
+        [PieceName.King]: '♔',
+        [PieceName.Pawn]: '♙',
+    },
 
+    [ChessColor.Dark]: {
+        [PieceName.Queen]: '♛',
+        [PieceName.Rook]: '♜',
+        [PieceName.Bishop]: '♝',
+        [PieceName.Knight]: '♞',
+        [PieceName.King]: '♚',
+        [PieceName.Pawn]: '♟',
+    },
+};
 export default class PieceComponent extends React.PureComponent<IPieceProps> {
     render() {
         const { name, color, opacity = 1 } = this.props; // Default opacity to 1 if not provided
         return (
             <div
-                className={`chess-piece ${color}-${name}`}
+                className={`chess-piece`}
                 draggable={true}
                 style={{ opacity }} // Apply opacity here
-            ></div>
+            >
+                {pieceImgs[color][name]}
+            </div>
         );
     }
 }
