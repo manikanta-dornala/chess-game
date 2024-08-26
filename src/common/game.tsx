@@ -1,7 +1,7 @@
 import { ChessColor, MoveType, PieceName } from './enums';
 import { InitialPiecePositions } from './initial-piece-positions';
 import { MovesHelper } from './moves-helper';
-import { IBoard, ICastlingRights, IMove } from './interfaces';
+import { IBoard, ICastlingRights, IMove, IPiece } from './interfaces';
 import { PositionHelper } from './position-helper';
 
 export class GameState {
@@ -13,6 +13,7 @@ export class GameState {
         [ChessColor.Light]: true,
         [ChessColor.Dark]: true,
     };
+    blockMoves = false;
     constructor() {
         this.board = { ...InitialPiecePositions }; // Initialize the board with the default piece positions
         this.board['lightCastlingRight'] = {
@@ -34,13 +35,14 @@ export class GameState {
                 this.turn === ChessColor.Light
                     ? ChessColor.Dark
                     : ChessColor.Light; // Switch turn back to the previous player
+            this.blockMoves = false;
         }
     }
 
     // Executes a move if it's valid
-    makeMove(curr: string, target: string) {
+    makeMove(curr: string, target: string): IMove | undefined {
         const currPiece = this.board[curr];
-        if (!currPiece) return; // Exit if there's no piece to move
+        if (!currPiece || this.blockMoves) return; // Exit if there's no piece to move
 
         const validMove = MovesHelper.getLegalMoves(
             this.turn,
@@ -89,13 +91,33 @@ export class GameState {
                 else newBoard['darkCastlingRight'] = null;
             }
 
-            this.turn =
-                this.turn === ChessColor.Light
-                    ? ChessColor.Dark
-                    : ChessColor.Light; // Switch turn to the other player
+            if (validMove.piece.name === PieceName.Pawn) {
+                const lastRank =
+                    validMove.piece.color === ChessColor.Light ? '8' : '1'; //
+                if (validMove.target[1] === lastRank) {
+                    validMove.type = MoveType.Promote;
+                    this.blockMoves = true;
+                }
+            }
+
+            if (validMove.type !== MoveType.Promote) {
+                this.turn =
+                    this.turn === ChessColor.Light
+                        ? ChessColor.Dark
+                        : ChessColor.Light; // Switch turn to the other player
+            }
+
             this.moves.push(validMove); // Record the move
             this.board = newBoard;
         }
+        return validMove;
+    }
+
+    handlePawnPromotion(position: string, piece: IPiece) {
+        this.board[position] = piece;
+        this.blockMoves = false;
+        this.turn =
+            this.turn === ChessColor.Light ? ChessColor.Dark : ChessColor.Light; // Switch turn to the other player
     }
 
     // Returns the last move that was made

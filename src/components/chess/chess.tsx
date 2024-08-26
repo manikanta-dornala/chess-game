@@ -1,12 +1,14 @@
+import PawnPromotion from '../pawn-promotion-popover/pawn-promotion';
 import React, { createRef } from 'react';
 import BoardComponent from '../board/board';
 import { GameState } from '../../common/game';
 import { IMove, IPiece } from '../../common/interfaces';
-import { ChessColor } from '../../common/enums';
+import { ChessColor, MoveType, PieceName } from '../../common/enums';
 
 import './chess.css';
 import { PositionHelper } from '../../common/position-helper';
 import { MovesHelper } from '../../common/moves-helper';
+import Popover from '../pawn-promotion-popover/popover';
 
 export default class ChessComponent extends React.Component {
     private boardRef = createRef<HTMLDivElement>();
@@ -16,6 +18,15 @@ export default class ChessComponent extends React.Component {
     highlightPositions: string[] = [];
     grabbedElm: HTMLElement | null = null;
     bottomColor = ChessColor.Light;
+
+    showPawnPromotionLogic = false;
+    pawnPromotionPosition: string | null = null;
+    pawnPromotionCoord: { x: number; y: number } | null = null;
+
+    constructor(props: any) {
+        super(props);
+        this.handlePromotionSelect = this.handlePromotionSelect.bind(this);
+    }
 
     render(): React.ReactNode {
         return (
@@ -36,6 +47,17 @@ export default class ChessComponent extends React.Component {
                             isKingInCheck={this.isKingInCheck()}
                         />
                     </div>
+                    {this.pawnPromotionCoord && (
+                        <Popover
+                            show={this.showPawnPromotionLogic}
+                            onClose={() => {}}
+                            coord={this.pawnPromotionCoord}
+                        >
+                            <PawnPromotion
+                                onSelect={this.handlePromotionSelect}
+                            />
+                        </Popover>
+                    )}
                 </div>
                 <div className="info">
                     <button
@@ -109,14 +131,47 @@ export default class ChessComponent extends React.Component {
                 this.boundY(e.clientY)
             );
             if (this.highlightPositions.includes(targetPosition)) {
-                this.gameState.makeMove(
+                const move = this.gameState.makeMove(
                     this.grabbedPieceCurrPosition,
                     targetPosition
                 );
+                if (move?.type === MoveType.Promote) {
+                    this.togglePawnPromotion(move.target);
+                }
             }
         }
         this.resetGrab();
     };
+
+    togglePawnPromotion(position: string) {
+        console.log('toggle at', position);
+        this.pawnPromotionPosition = position;
+        this.pawnPromotionCoord = this.getCoordAtPosition(position);
+        if (this.pawnPromotionCoord) this.showPawnPromotionLogic = true;
+        this.forceUpdate();
+    }
+
+    handlePromotionSelect(pieceName: PieceName) {
+        console.log(
+            'promoted to',
+            pieceName,
+            'at',
+            this.pawnPromotionPosition,
+            this.pawnPromotionCoord,
+            this.gameState
+        );
+        if (this.pawnPromotionPosition) {
+            console.log(pieceName);
+            this.gameState.handlePawnPromotion(this.pawnPromotionPosition, {
+                name: pieceName,
+                color: this.gameState.turn,
+            });
+            this.pawnPromotionCoord = null;
+            this.pawnPromotionPosition = null;
+            this.showPawnPromotionLogic = false;
+            this.forceUpdate();
+        }
+    }
 
     toggleBoardColor = () => {
         this.bottomColor =
@@ -164,6 +219,22 @@ export default class ChessComponent extends React.Component {
             fileIndex,
             bottomColor: this.bottomColor,
         });
+    }
+
+    getCoordAtPosition(position: string) {
+        const indices = PositionHelper.getPositionToCoord(
+            position,
+            this.bottomColor
+        );
+        if (indices) {
+            const minX = this.boardRef.current?.offsetLeft ?? 0;
+            const minY = this.boardRef.current?.offsetTop ?? 0;
+            return {
+                x: minX + 100 * indices.x,
+                y: minY + 100 * indices.y,
+            };
+        }
+        return null;
     }
 
     isGrabbable(element: HTMLElement): boolean {

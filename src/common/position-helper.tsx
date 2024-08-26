@@ -25,6 +25,22 @@ export abstract class PositionHelper {
     }
 
     @cache
+    public static getPositionToCoord(
+        position: string,
+        bottomColor: ChessColor
+    ) {
+        if (!this.validSquares.has(position)) return null;
+        const file = position[0];
+        const rank = position[1];
+        return bottomColor === ChessColor.Light
+            ? { x: this.files.indexOf(file), y: this.ranks.indexOf(rank) }
+            : {
+                  x: 7 - this.files.indexOf(file),
+                  y: 7 - this.ranks.indexOf(rank),
+              };
+    }
+
+    @cache
     public static getSquareColor(position: string): ChessColor {
         const xPos = position[0];
         const yPos = parseInt(position[1], 10);
