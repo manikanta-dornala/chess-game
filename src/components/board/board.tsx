@@ -12,16 +12,10 @@ export default class BoardComponent extends React.Component<{
     bottomColor: ChessColor;
     highlightPositions: Array<string>;
     grabbedPiecePosition: string;
-    isKingInCheck: boolean;
 }> {
     getSquares() {
-        const {
-            board,
-            bottomColor,
-            highlightPositions,
-            grabbedPiecePosition,
-            isKingInCheck,
-        } = this.props;
+        const { board, bottomColor, highlightPositions, grabbedPiecePosition } =
+            this.props;
         let squares = [];
         for (let j = 0; j < PositionHelper.ranks.length; j++) {
             for (let i = 0; i < PositionHelper.files.length; i++) {

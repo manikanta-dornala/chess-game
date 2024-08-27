@@ -1,6 +1,6 @@
 import { PositionHelper } from './position-helper';
 import { ChessColor, MoveType, PieceName } from './enums';
-import { IBoard, ICastlingRights, IMove, IPiece } from './interfaces';
+import { IBoard, IMove, IPiece } from './interfaces';
 import { PieceMoveSets } from './piece-move-sets';
 import { cache } from './utils';
 
@@ -236,7 +236,7 @@ export abstract class MovesHelper {
     // Determines if the king of the specified color is in check
     public static isKingInCheck(turn: ChessColor, board: IBoard): boolean {
         const kingPosition = PositionHelper.getKingPosition(turn, board);
-        console.log('kingPosition', kingPosition);
+
         if (!kingPosition) return false;
 
         return this.isKingInCheckAt(kingPosition, turn, board);

@@ -16,7 +16,7 @@
 .squareLabel {
     display: block;
     position: absolute;
-    font-size: x-small;
+    font-size: 0.7em;
     opacity: 50%;
     padding-left: 0.1em;
     color: var(--text-color-light);
@@ -28,21 +28,21 @@
 
 .highlight-border-light {
     box-sizing: border-box;
-    border: 1px solid var(--highlight-border-color);
+    border: 0.1em solid var(--highlight-border-color);
     box-shadow: var(--highlight-shadow-light);
     z-index: 45;
 }
 
 .highlight-border-dark {
     box-sizing: border-box;
-    border: 1px solid var(--highlight-border-color);
+    border: 0.1em solid var(--highlight-border-color);
     box-shadow: var(--highlight-shadow-dark);
     z-index: 45;
 }
 
 .highlight-border-king-check {
     box-sizing: border-box;
-    border: 1px solid var(--highlight-border-color);
+    border: 0.1em solid var(--highlight-border-color);
     box-shadow: var(--highlight-shadow-check);
     z-index: 45;
 }

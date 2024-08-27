@@ -1,6 +1,6 @@
 import { ChessColor, PieceName, MoveType } from '../enums';
 import { GameState } from '../game';
-import { IBoard, ICastlingRights, IMove } from '../interfaces';
+import { ICastlingRights, IMove } from '../interfaces';
 
 export default function getFEN(gameState: GameState): string {
     const { board, turn, halfmoveClock, fullmoveNumber } = gameState;
@@ -105,7 +105,7 @@ function getEnPassantTarget(lastMove: IMove | null): string | null {
         lastMove.type === MoveType.DoubleMove
     ) {
         const file = lastMove.target[0];
-        const rank = lastMove.target[1];
+
         const enPassantRank =
             lastMove.piece.color === ChessColor.Light ? '3' : '6';
         return `${file}${enPassantRank}`;

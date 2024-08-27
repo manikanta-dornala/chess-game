@@ -3,14 +3,12 @@ import PawnPromotion from '../pawn-promotion-popover/pawn-promotion';
 import BoardComponent from '../board/board';
 import Popover from '../pawn-promotion-popover/popover';
 import { GameState } from '../../common/game';
-import { IMove, IPiece } from '../../common/interfaces';
+import { IPiece } from '../../common/interfaces';
 import { ChessColor, MoveType, PieceName } from '../../common/enums';
 import { PositionHelper } from '../../common/position-helper';
 import { MovesHelper } from '../../common/moves-helper';
 
 import './chess.css';
-import { getMovePGN, getPGN } from '../../common/notations/pgn';
-import getFEN from '../../common/notations/fen';
 import ScoreComponent from './score/score';
 import NotationsComponent from './notations/notations';
 
@@ -47,7 +45,6 @@ export default class ChessComponent extends React.Component {
                             highlightPositions={this.highlightPositions}
                             bottomColor={this.bottomColor}
                             grabbedPiecePosition={this.grabbedPieceCurrPosition}
-                            isKingInCheck={this.isKingInCheck()}
                         />
                     </div>
                     {this.pawnPromotionCoord && (
@@ -67,13 +64,17 @@ export default class ChessComponent extends React.Component {
                             show={this.isCheckMate()}
                             onClose={() => {}}
                             coord={{
-                                x: this.boardRef.current!.offsetLeft + 275,
-                                y: this.boardRef.current!.offsetTop + 350,
+                                x:
+                                    this.boardRef.current!.offsetLeft +
+                                    275 * this.getPixelSize(),
+                                y:
+                                    this.boardRef.current!.offsetTop +
+                                    350 * this.getPixelSize(),
                             }}
                         >
                             <div
                                 className="grid"
-                                style={{ background: 'white', padding: '50px' }}
+                                style={{ background: 'white', padding: '3em' }}
                             >
                                 checkmate {this.gameState.turn} king
                             </div>
@@ -161,10 +162,10 @@ export default class ChessComponent extends React.Component {
 
     private boundPawnPromitionCoord(coord: { x: number; y: number }) {
         const offsetTop = this.boardRef.current!.offsetTop;
-        coord.y += 50;
-        coord.x += 50;
-        if (coord.y > offsetTop + 600) {
-            coord.y = coord.y - 250;
+        coord.y += 50 * this.getPixelSize();
+        coord.x += 50 * this.getPixelSize();
+        if (coord.y > offsetTop + 600 * this.getPixelSize()) {
+            coord.y = coord.y - 250 * this.getPixelSize();
         }
         return coord;
     }
@@ -219,10 +220,12 @@ export default class ChessComponent extends React.Component {
 
     private getPositionAtCoord(x: number, y: number) {
         const fileIndex = Math.floor(
-            (this.boundX(x) - this.boardRef.current!.offsetLeft) / 100
+            (this.boundX(x) - this.boardRef.current!.offsetLeft) /
+                (100 * this.getPixelSize())
         );
         const rankIndex = Math.floor(
-            (this.boundY(y) - this.boardRef.current!.offsetTop) / 100
+            (this.boundY(y) - this.boardRef.current!.offsetTop) /
+                (100 * this.getPixelSize())
         );
         return PositionHelper.gridCoordToPosition({
             rankIndex,
@@ -239,20 +242,26 @@ export default class ChessComponent extends React.Component {
         const offsetLeft = this.boardRef.current!.offsetLeft;
         const offsetTop = this.boardRef.current!.offsetTop;
         return {
-            x: offsetLeft + 100 * indices.x,
-            y: offsetTop + 100 * indices.y,
+            x: offsetLeft + 100 * indices.x * this.getPixelSize(),
+            y: offsetTop + 100 * indices.y * this.getPixelSize(),
         };
     }
 
     private boundX = (x: number) =>
         Math.max(
             this.boardRef.current!.offsetLeft,
-            Math.min(x, this.boardRef.current!.offsetLeft + 701)
+            Math.min(
+                x,
+                this.boardRef.current!.offsetLeft + 701 * this.getPixelSize()
+            )
         );
     private boundY = (y: number) =>
         Math.max(
             this.boardRef.current!.offsetTop,
-            Math.min(y, this.boardRef.current!.offsetTop + 701)
+            Math.min(
+                y,
+                this.boardRef.current!.offsetTop + 701 * this.getPixelSize()
+            )
         );
 
     private isGrabbable(element: HTMLElement) {
@@ -274,5 +283,10 @@ export default class ChessComponent extends React.Component {
         );
 
         return isCheckMate;
+    }
+
+    private getPixelSize(): number {
+        const p = Math.min(window.innerWidth, window.innerHeight) / 1000.0;
+        return p;
     }
 }

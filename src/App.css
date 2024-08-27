@@ -1,3 +1,10 @@
 .Chess {
     height: 100vh;
 }
+
+button {
+    padding: 0.5em;
+    font-size: 1em;
+    border-radius: 0.5em; /* Adjust border-radius if needed */
+    border: 0.01em black solid;
+}

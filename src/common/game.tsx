@@ -2,7 +2,6 @@ import { ChessColor, MoveType, PieceName } from './enums';
 import { InitialPiecePositions } from './initial-piece-positions';
 import { MovesHelper } from './moves-helper';
 import { IBoard, IMove, IPiece } from './interfaces';
-import { PositionHelper } from './position-helper';
 
 export class GameState {
     board: IBoard; // Represents the current state of the chessboard
@@ -150,7 +149,6 @@ export class GameState {
             this.moves.push(validMove); // Record the move
             this.board = newBoard;
         }
-        console.log(this.capturedPieces);
         return validMove;
     }
 

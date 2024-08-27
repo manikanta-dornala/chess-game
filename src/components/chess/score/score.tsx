@@ -19,7 +19,6 @@ export default class ScoreComponent extends React.Component<
     }
 
     render() {
-        const capturedPieces = this.props.gameState.capturedPieces;
         return (
             <div>
                 <h3>Score</h3>

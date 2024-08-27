@@ -72,7 +72,6 @@ export abstract class PositionHelper {
                 kingPosition = position;
             }
         });
-        // console.log('hi');
         return kingPosition;
     }
 }
