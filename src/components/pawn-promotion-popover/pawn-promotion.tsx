@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChessColor, PieceName } from '../../common/enums';
 import './pawn-promotion.css';
+import { PieceSymbols } from '../../common/initial-piece-positions';
 interface IPawnPromotionProps {
     color: ChessColor;
     onSelect: (piece: PieceName) => void;
@@ -16,26 +17,6 @@ export default class PawnPromotionComponent extends React.Component<
         PieceName.Knight,
     ];
 
-    pieceImgs = {
-        [ChessColor.Light]: {
-            [PieceName.Queen]: '♕',
-            [PieceName.Rook]: '♖',
-            [PieceName.Bishop]: '♗',
-            [PieceName.Knight]: '♘',
-            [PieceName.King]: '♔',
-            [PieceName.Pawn]: '♙',
-        },
-
-        [ChessColor.Dark]: {
-            [PieceName.Queen]: '♛',
-            [PieceName.Rook]: '♜',
-            [PieceName.Bishop]: '♝',
-            [PieceName.Knight]: '♞',
-            [PieceName.King]: '♚',
-            [PieceName.Pawn]: '♟',
-        },
-    };
-
     render(): React.ReactNode {
         return (
             <div className="promotion-ui">
@@ -50,7 +31,7 @@ export default class PawnPromotionComponent extends React.Component<
                                 fontFamily: 'Merida',
                             }}
                         >
-                            {this.pieceImgs[this.props.color][piece]}
+                            {PieceSymbols[this.props.color][piece]}
                         </span>
                         {' ' + piece}
                     </button>

@@ -2,6 +2,26 @@ import { ChessColor, PieceName } from './enums';
 import { IPiece } from './interfaces';
 import { PositionHelper } from './position-helper';
 
+export const PieceSymbols = {
+    [ChessColor.Light]: {
+        [PieceName.Queen]: '♕',
+        [PieceName.Rook]: '♖',
+        [PieceName.Bishop]: '♗',
+        [PieceName.Knight]: '♘',
+        [PieceName.King]: '♔',
+        [PieceName.Pawn]: '♙',
+    },
+
+    [ChessColor.Dark]: {
+        [PieceName.Queen]: '♛',
+        [PieceName.Rook]: '♜',
+        [PieceName.Bishop]: '♝',
+        [PieceName.Knight]: '♞',
+        [PieceName.King]: '♚',
+        [PieceName.Pawn]: '♟',
+    },
+};
+
 const lightPieces: { [position: string]: IPiece } = {
     a1: { name: PieceName.Rook, color: ChessColor.Light },
     b1: { name: PieceName.Knight, color: ChessColor.Light },

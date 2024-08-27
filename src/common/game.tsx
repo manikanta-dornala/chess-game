@@ -12,6 +12,10 @@ export class GameState {
     blockMoves = false; // Tracks if game is currently halted for Pawn Promotion
     halfmoveClock: number = 0; // Counts halfmoves since last capture or pawn move
     fullmoveNumber: number = 1; // Counts full moves
+    capturedPieces: { [key in ChessColor]: PieceName[] } = {
+        [ChessColor.Light]: [],
+        [ChessColor.Dark]: [],
+    };
     constructor() {
         this.board = { ...InitialPiecePositions }; // Initialize the board with the default piece positions
         this.board['lightCastlingRight'] = {
@@ -27,7 +31,7 @@ export class GameState {
     // Reverts the game state to the previous turn
     takeBack() {
         if (this.boards.length) {
-            this.moves.pop(); // Remove the last move from history
+            const lastMove = this.moves.pop(); // Remove the last move from history
             this.board = this.boards.pop() ?? this.board; // Revert to the previous board state
             this.turn =
                 this.turn === ChessColor.Light
@@ -39,6 +43,14 @@ export class GameState {
             this.halfmoveClock = Math.max(0, this.halfmoveClock - 1);
             if (this.turn === ChessColor.Dark) {
                 this.fullmoveNumber = Math.max(1, this.fullmoveNumber - 1);
+            }
+            if (
+                (lastMove &&
+                    (lastMove.type === MoveType.Capture ||
+                        lastMove.type === MoveType.EnPassant)) ||
+                (lastMove && this.board[lastMove.target])
+            ) {
+                this.capturedPieces[this.turn].pop();
             }
         }
     }
@@ -58,12 +70,20 @@ export class GameState {
         if (validMove) {
             const newBoard = { ...this.board }; // Make a copy of the board
             this.boards.push(this.board); // Save the current board state
+            const pieceAtTarget = this.board[validMove.target];
             newBoard[target] = currPiece; // Move the piece to the target square
             newBoard[curr] = null; // Clear the original square
 
+            if (pieceAtTarget) {
+                this.capturedPieces[this.turn].push(pieceAtTarget.name);
+            }
+
             if (validMove.type === MoveType.EnPassant) {
                 const lastMove = this.lastMove();
-                if (lastMove) newBoard[lastMove.target] = null; // Handle En Passant capture
+                if (lastMove) {
+                    newBoard[lastMove.target] = null;
+                    this.capturedPieces[this.turn].push(PieceName.Pawn);
+                } // Handle En Passant capture
             }
 
             if (validMove.type === MoveType.Castling) {
@@ -130,6 +150,7 @@ export class GameState {
             this.moves.push(validMove); // Record the move
             this.board = newBoard;
         }
+        console.log(this.capturedPieces);
         return validMove;
     }
 

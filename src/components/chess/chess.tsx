@@ -11,6 +11,8 @@ import { MovesHelper } from '../../common/moves-helper';
 import './chess.css';
 import { getMovePGN, getPGN } from '../../common/notations/pgn';
 import getFEN from '../../common/notations/fen';
+import ScoreComponent from './score/score';
+import NotationsComponent from './notations/notations';
 
 export default class ChessComponent extends React.Component {
     private boardRef = createRef<HTMLDivElement>();
@@ -98,16 +100,10 @@ export default class ChessComponent extends React.Component {
                     >
                         Undo last move
                     </button>
-                    <div hidden={this.gameState.moves.length === 0}>
-                        <h2>FEN</h2>
-                        <p>{getFEN(this.gameState)}</p>
-                        <h2>Moves</h2>
-                        <h3>PGN</h3>
-                        <p>{getPGN(this.gameState.moves)}</p>
-                        <table className="moves-table">
-                            <tbody>{this.renderMoves()}</tbody>
-                        </table>
-                    </div>
+                    <ScoreComponent gameState={this.gameState}></ScoreComponent>
+                    <NotationsComponent
+                        gameState={this.gameState}
+                    ></NotationsComponent>
                 </div>
             </div>
         );
@@ -206,29 +202,6 @@ export default class ChessComponent extends React.Component {
         this.gameState = new GameState();
         this.forceUpdate();
     };
-
-    renderMoves(): React.ReactNode[] {
-        let blackMoves = 1;
-        const moves: React.ReactNode[] = [];
-
-        this.gameState.moves.forEach((move) => {
-            moves.push(
-                <tr
-                    key={`${move.position}-${move.piece.color}-${move.piece.name}-${move.target}`}
-                >
-                    <td>{blackMoves}</td>
-                    <td>{getMovePGN(move)}</td>{' '}
-                    <td>
-                        {`${move.position} ${move.piece.color} ${move.piece.name} ${move.type.toLowerCase()} ${move.target}`}
-                    </td>
-                </tr>
-            );
-            if (move.piece.color === ChessColor.Dark) {
-                blackMoves += 1;
-            }
-        });
-        return moves;
-    }
 
     private resetGrab() {
         this.grabbedPiece = null;
