@@ -12,10 +12,34 @@ export default class NotationsComponent extends React.Component<
     render() {
         return (
             <div>
-                <h3>FEN (Forsyth-Edwards Notation)</h3>
-                <p className="notations">{getFEN(this.props.gameState)}</p>
+                <h3>
+                    <a
+                        href="https://www.chess.com/terms/fen-chess"
+                        target="_blank"
+                    >
+                        FEN
+                    </a>{' '}
+                    (Forsyth-Edwards Notation)
+                </h3>
+                <p className="notations">
+                    {getFEN({
+                        board: this.props.gameState.board,
+                        turn: this.props.gameState.turn,
+                        lastMove: this.props.gameState.lastMove(),
+                        halfmoveClock: this.props.gameState.halfmoveClock,
+                        fullmoveNumber: this.props.gameState.fullmoveNumber,
+                    })}
+                </p>
                 <div hidden={this.props.gameState.moves.length === 0}>
-                    <h3>PGN (Portable Game Notation) </h3>
+                    <h3>
+                        <a
+                            href="https://www.chess.com/terms/chess-pgn"
+                            target="_blank"
+                        >
+                            PGN
+                        </a>{' '}
+                        (Portable Game Notation)
+                    </h3>
                     <p className="notations">
                         {getPGN(this.props.gameState.moves)}
                     </p>
@@ -32,13 +56,15 @@ export default class NotationsComponent extends React.Component<
         let blackMoves = 1;
         const moves: React.ReactNode[] = [];
 
-        this.props.gameState.moves.forEach((move) => {
+        this.props.gameState.moves.forEach((move, index) => {
+            const lastMove =
+                index > 0 ? this.props.gameState.moves[index - 1] : null;
             moves.push(
                 <tr
                     key={`${move.position}-${move.piece.color}-${move.piece.name}-${move.target}`}
                 >
                     <td>{blackMoves}</td>
-                    <td>{getMovePGN(move)}</td>{' '}
+                    <td>{getMovePGN(move)}</td>
                     <td>
                         {move.position}{' '}
                         <span style={{ fontFamily: 'Merida' }}>

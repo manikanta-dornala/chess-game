@@ -1,11 +1,20 @@
 import { ChessColor, PieceName, MoveType } from '../enums';
 import { GameState } from '../game';
-import { ICastlingRights, IMove } from '../interfaces';
+import { IBoard, ICastlingRights, IMove } from '../interfaces';
 
-export default function getFEN(gameState: GameState): string {
-    const { board, turn, halfmoveClock, fullmoveNumber } = gameState;
-    const lastMove = gameState.lastMove();
-
+export default function getFEN({
+    board,
+    turn,
+    lastMove,
+    halfmoveClock,
+    fullmoveNumber,
+}: {
+    board: IBoard;
+    turn: ChessColor;
+    lastMove: IMove | null;
+    halfmoveClock: number;
+    fullmoveNumber: number;
+}): string {
     let fen = '';
 
     const castlingRights: ICastlingRights = {

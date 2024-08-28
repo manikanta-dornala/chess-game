@@ -7,15 +7,16 @@ interface IPieceProps {
     name: PieceName;
     color: ChessColor;
     opacity?: number; // Add this optional prop
+    draggable: boolean;
 }
 
 export default class PieceComponent extends React.PureComponent<IPieceProps> {
     render() {
-        const { name, color, opacity = 1 } = this.props; // Default opacity to 1 if not provided
+        const { name, color, opacity = 1, draggable } = this.props; // Default opacity to 1 if not provided
         return (
             <div
                 className={`chess-piece`}
-                draggable={true}
+                draggable={draggable}
                 style={{ opacity }} // Apply opacity here
             >
                 {PieceSymbols[color][name]}

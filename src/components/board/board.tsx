@@ -4,7 +4,7 @@ import './board.css';
 import { ChessColor, PieceName } from '../../common/enums';
 import SquareComponent from './square/square';
 import { PositionHelper } from '../../common/position-helper';
-import { IBoard } from '../../common/interfaces';
+import { IBoard, IMove } from '../../common/interfaces';
 import { MovesHelper } from '../../common/moves-helper';
 
 export default class BoardComponent extends React.Component<{
@@ -12,10 +12,16 @@ export default class BoardComponent extends React.Component<{
     bottomColor: ChessColor;
     highlightPositions: Array<string>;
     grabbedPiecePosition: string;
+    validMoves: { [position: string]: IMove[] };
 }> {
     getSquares() {
-        const { board, bottomColor, highlightPositions, grabbedPiecePosition } =
-            this.props;
+        const {
+            board,
+            bottomColor,
+            highlightPositions,
+            grabbedPiecePosition,
+            validMoves,
+        } = this.props;
         let squares = [];
         for (let j = 0; j < PositionHelper.ranks.length; j++) {
             for (let i = 0; i < PositionHelper.files.length; i++) {
@@ -44,6 +50,9 @@ export default class BoardComponent extends React.Component<{
                         highlight={shouldHighlight}
                         isPieceGrabbed={isPieceAtPositionGrabbed}
                         isKingInCheck={foo}
+                        validMoves={
+                            validMoves[position] ? validMoves[position] : null
+                        }
                     ></SquareComponent>
                 );
             }

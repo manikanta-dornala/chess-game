@@ -45,6 +45,7 @@ export default class ChessComponent extends React.Component {
                             highlightPositions={this.highlightPositions}
                             bottomColor={this.bottomColor}
                             grabbedPiecePosition={this.grabbedPieceCurrPosition}
+                            validMoves={this.gameState.currentValidMoves}
                         />
                     </div>
                     {this.pawnPromotionCoord && (
@@ -116,14 +117,9 @@ export default class ChessComponent extends React.Component {
             const position = this.getPositionAtCoord(e.clientX, e.clientY);
             const piece = this.gameState.board[position];
             if (piece) {
-                this.highlightPositions = MovesHelper.getLegalMoves(
-                    this.gameState.turn,
-                    piece,
-                    position,
-                    this.gameState.board,
-                    this.gameState.lastMove()
-                ).map((move) => move.target);
-
+                this.highlightPositions = this.gameState.currentValidMoves[
+                    position
+                ].map((move) => move.target);
                 this.grabbedPiece = piece;
                 this.grabbedPieceCurrPosition = position;
                 this.forceUpdate();

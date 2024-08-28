@@ -3,7 +3,7 @@ import './square.css';
 import { ChessColor } from '../../../common/enums';
 import PieceComponent from './piece/piece';
 import { PositionHelper } from '../../../common/position-helper';
-import { IPiece } from '../../../common/interfaces';
+import { IMove, IPiece } from '../../../common/interfaces';
 
 interface ISquareProps {
     position: string;
@@ -11,6 +11,7 @@ interface ISquareProps {
     highlight: boolean;
     isKingInCheck: boolean;
     isPieceGrabbed: boolean;
+    validMoves: IMove[] | null | undefined;
 }
 
 interface ISquareState {
@@ -26,8 +27,14 @@ export default class SquareComponent extends React.Component<
     };
 
     render(): React.ReactNode {
-        const { position, piece, highlight, isKingInCheck, isPieceGrabbed } =
-            this.props;
+        const {
+            position,
+            piece,
+            highlight,
+            isKingInCheck,
+            isPieceGrabbed,
+            validMoves,
+        } = this.props;
         const { color } = this.state;
 
         const squareClass =
@@ -60,6 +67,7 @@ export default class SquareComponent extends React.Component<
                             name={piece.name}
                             color={piece.color}
                             opacity={pieceOpacity}
+                            draggable={!!validMoves && validMoves.length > 0}
                         />
                     )}
                 </div>
