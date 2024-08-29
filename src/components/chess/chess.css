@@ -41,3 +41,23 @@
     word-wrap: break-word;
     width: 100%;
 }
+
+@media (max-width: 768px) {
+    .wrapper {
+        grid-template-columns: 1fr;
+    }
+
+    .chess-container {
+        grid-column-start: 1;
+        grid-column-end: 2;
+    }
+
+    .info-container {
+        grid-column-start: 1;
+        grid-column-end: 2;
+        font-size: calc(24 * var(--board-size) / 800);
+        display: grid;
+        place-content: center;
+        margin: calc(var(--board-size) / 100);
+    }
+}

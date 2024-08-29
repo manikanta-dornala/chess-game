@@ -1,6 +1,5 @@
 import React from 'react';
 import { GameState } from '../../../common/game';
-import { ChessColor } from '../../../common/enums';
 import getFEN from '../../../common/notations/fen';
 import './notations.css';
 import { PieceSymbols } from '../../../common/initial-piece-positions';
@@ -16,6 +15,7 @@ export default class NotationsComponent extends React.Component<
                     <a
                         href="https://www.chess.com/terms/fen-chess"
                         target="_blank"
+                        rel="noreferrer"
                     >
                         FEN
                     </a>{' '}
@@ -35,6 +35,7 @@ export default class NotationsComponent extends React.Component<
                         <a
                             href="https://www.chess.com/terms/chess-pgn"
                             target="_blank"
+                            rel="noreferrer"
                         >
                             PGN
                         </a>{' '}
