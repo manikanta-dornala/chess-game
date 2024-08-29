@@ -1,9 +1,16 @@
 import { ChessColor, MoveType, PieceName } from '../enums';
 import { IBoard, IMove } from '../interfaces';
 
-export function getPGN(
+export function getFullPGN(moves: IMove[]): string {
+    return moves
+        .map((move) => {
+            return `${move.piece.color === ChessColor.Light ? move.fullMoveNumber + '. ' : ''}${move.pgn}`;
+        })
+        .join(' ');
+}
+
+export function getMovePGN(
     move: IMove,
-    fullmoveNumber: number,
     currentPossibleMoves: { [position: string]: IMove[] },
     board: IBoard
 ): string {
@@ -50,9 +57,7 @@ export function getPGN(
             : '';
     const enPassantSuffix = move.type === MoveType.EnPassant ? ' e.p.' : '';
 
-    const moveNumber =
-        move.piece.color === ChessColor.Light ? `${fullmoveNumber}. ` : '';
-    return `${moveNumber}${pieceNotation}${disambiguation}${captureNotation}${targetSquare}${promotion}${enPassantSuffix}`;
+    return `${pieceNotation}${disambiguation}${captureNotation}${targetSquare}${promotion}${enPassantSuffix}`;
 }
 
 export function getPieceNotation(name: PieceName): string {

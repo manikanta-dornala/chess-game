@@ -16,14 +16,7 @@
     --text-color-dark: white;
 }
 
-#chess-game {
-    display: grid;
-    background-color: black;
-    width: var(--board-size); /* Adjust for border */
-    height: var(--board-size);
-}
-
-.container {
+.wrapper {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     height: 100vh;
@@ -38,7 +31,7 @@
     grid-column-end: 4;
 }
 
-.info {
+.info-container {
     grid-column-start: 4;
     grid-column-end: 5;
     height: var(--board-size);
@@ -47,11 +40,4 @@
     overflow: scroll;
     word-wrap: break-word;
     width: 100%;
-}
-
-.moves-table table,
-th,
-td {
-    border: 0.1em solid gray;
-    padding: calc(var(--board-size) / 100);
 }

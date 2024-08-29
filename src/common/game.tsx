@@ -3,7 +3,7 @@ import { InitialPiecePositions } from './initial-piece-positions';
 import { MovesHelper } from './moves-helper';
 import { IBoard, IMove, IPiece } from './interfaces';
 import { PositionHelper } from './position-helper';
-import { getPGN } from './notations/pgn';
+import { getMovePGN } from './notations/pgn';
 
 export class GameState {
     board: IBoard; // Represents the current state of the chessboard
@@ -151,12 +151,12 @@ export class GameState {
                         ? ChessColor.Dark
                         : ChessColor.Light;
             }
-            validMove.pgn = getPGN(
+            validMove.pgn = getMovePGN(
                 validMove,
-                this.fullmoveNumber,
                 this.currentValidMoves,
                 this.board
             );
+            validMove.fullMoveNumber = this.fullmoveNumber;
             this.moves.push(validMove); // Record the move
 
             // Update halfmove clock

@@ -32,13 +32,15 @@ export default class ChessComponent extends React.Component {
 
     render(): React.ReactNode {
         return (
-            <div className="container">
+            <div className="wrapper">
                 <div className="chess-container">
                     <div
                         id="chess-game"
                         onDragOver={(e) => e.preventDefault()}
-                        onDragEnd={this.dropPiece}
-                        onDragStart={this.grabPiece}
+                        onDragStart={this.handleDragStart}
+                        onDragEnd={this.handleDragEnd}
+                        onTouchStart={this.handleTouchStart}
+                        onTouchEnd={this.handleTouchEnd}
                         ref={this.boardRef}
                     >
                         <BoardComponent
@@ -61,16 +63,16 @@ export default class ChessComponent extends React.Component {
                             />
                         </Popover>
                     )}
+                    {this.noMoreMoves() && (
+                        <AlertsComponent
+                            gameState={this.gameState}
+                            x={(() => this.boardRef!.current!.offsetLeft)()}
+                            y={this.boardRef.current!.offsetTop}
+                            pixelSize={this.getPixelSize()}
+                        ></AlertsComponent>
+                    )}
                 </div>
-                {this.noMoreMoves() && (
-                    <AlertsComponent
-                        gameState={this.gameState}
-                        x={(() => this.boardRef!.current!.offsetLeft)()}
-                        y={this.boardRef.current!.offsetTop}
-                        pixelSize={this.getPixelSize()}
-                    ></AlertsComponent>
-                )}
-                <div className="info">
+                <div className="info-container">
                     <button className="btn" onClick={this.newGame}>
                         New Game
                     </button>
@@ -99,28 +101,49 @@ export default class ChessComponent extends React.Component {
         );
     }
 
-    private grabPiece = (e: React.MouseEvent<HTMLDivElement>) => {
+    private handleDragStart = (e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
         if (this.isGrabbable(target)) {
-            const position = this.getPositionAtCoord(e.clientX, e.clientY);
-            const piece = this.gameState.board[position];
-            if (piece) {
-                this.highlightPositions = this.gameState.currentValidMoves[
-                    position
-                ].map((move) => move.target);
-                this.grabbedPiece = piece;
-                this.grabbedPieceCurrPosition = position;
-                this.forceUpdate();
-            }
+            this.grabPiece(e.clientX, e.clientY);
         }
     };
 
-    private dropPiece = (e: React.MouseEvent<HTMLDivElement>) => {
+    private handleDragEnd = (e: React.MouseEvent<HTMLDivElement>) => {
+        this.dropPiece(e.clientX, e.clientY);
+    };
+
+    private handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+        const touch = e.touches[0];
+        const target = document.elementFromPoint(
+            touch.clientX,
+            touch.clientY
+        ) as HTMLElement;
+        if (this.isGrabbable(target)) {
+            this.grabPiece(touch.clientX, touch.clientY);
+        }
+    };
+
+    private handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+        const touch = e.changedTouches[0];
+        this.dropPiece(touch.clientX, touch.clientY);
+    };
+
+    private grabPiece = (x: number, y: number) => {
+        const position = this.getPositionAtCoord(x, y);
+        const piece = this.gameState.board[position];
+        if (piece) {
+            this.highlightPositions = this.gameState.currentValidMoves[
+                position
+            ].map((move) => move.target);
+            this.grabbedPiece = piece;
+            this.grabbedPieceCurrPosition = position;
+            this.forceUpdate();
+        }
+    };
+
+    private dropPiece = (x: number, y: number) => {
         if (this.grabbedPiece) {
-            const targetPosition = this.getPositionAtCoord(
-                e.clientX,
-                e.clientY
-            );
+            const targetPosition = this.getPositionAtCoord(x, y);
             if (this.highlightPositions.includes(targetPosition)) {
                 const move = this.gameState.makeMove(
                     this.grabbedPieceCurrPosition,

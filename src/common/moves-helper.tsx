@@ -1,6 +1,6 @@
 import { PositionHelper } from './position-helper';
 import { ChessColor, MoveType, PieceName } from './enums';
-import { IBoard, IMove, IPiece } from './interfaces';
+import { createMove, IBoard, IMove, IPiece } from './interfaces';
 import { PieceMoveSets } from './piece-move-sets';
 import { cache } from './utils';
 
@@ -107,13 +107,14 @@ export abstract class MovesHelper {
                 pathIsClear = pathIsClear && !board[pos];
             });
             if (rookIsMine && pathIsClear) {
-                moves.push({
-                    piece: { name: PieceName.King, color: turn },
-                    type: MoveType.Castling,
-                    position: kingPos,
-                    target: kingTargetPos[i],
-                    pgn: null,
-                });
+                moves.push(
+                    createMove({
+                        piece: { name: PieceName.King, color: turn },
+                        type: MoveType.Castling,
+                        position: kingPos,
+                        target: kingTargetPos[i],
+                    })
+                );
             }
         }
         return moves;
@@ -135,7 +136,7 @@ export abstract class MovesHelper {
 
         // Helper function to add a move
         const addMove = (target: string, type: MoveType) =>
-            moves.push({ piece, type, target, position, pgn: null });
+            moves.push(createMove({ piece, type, target, position }));
 
         const forwardOne = `${file}${rank + moveDir}`;
         const forwardTwo = `${file}${rank + 2 * moveDir}`;
@@ -210,25 +211,25 @@ export abstract class MovesHelper {
                 if (targetPiece) {
                     // Capture an enemy piece
                     if (targetPiece.color !== piece.color) {
-                        moves.push({
-                            piece,
-                            type: MoveType.Capture,
-                            target: targetPos,
-                            position,
-                            pgn: null,
-                        });
+                        moves.push(
+                            createMove({
+                                piece,
+                                position,
+                                target: targetPos,
+                                type: MoveType.Capture,
+                            })
+                        );
                     }
                     // Stop moving forward there's a piece in the way
                     break;
                 } else {
                     // Regular move to an empty square
-                    let move: IMove | null = {
+                    let move: IMove | null = createMove({
                         piece,
                         type: MoveType.Move,
                         target: targetPos,
                         position,
-                        pgn: null,
-                    };
+                    });
                     if (move) moves.push(move);
                 }
             }

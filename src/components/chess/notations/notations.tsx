@@ -2,9 +2,9 @@ import React from 'react';
 import { GameState } from '../../../common/game';
 import { ChessColor } from '../../../common/enums';
 import getFEN from '../../../common/notations/fen';
-import { getPGN } from '../../../common/notations/pgn';
-import './notations';
+import './notations.css';
 import { PieceSymbols } from '../../../common/initial-piece-positions';
+import { getFullPGN } from '../../../common/notations/pgn';
 export default class NotationsComponent extends React.Component<
     { gameState: GameState },
     any
@@ -41,9 +41,7 @@ export default class NotationsComponent extends React.Component<
                         (Portable Game Notation)
                     </h3>
                     <p className="notations">
-                        {this.props.gameState.moves
-                            .map((move) => move.pgn)
-                            .join(' ')}
+                        {getFullPGN(this.props.gameState.moves)}
                     </p>
                     <h3>Moves</h3>
                     <table className="moves-table">
@@ -55,18 +53,15 @@ export default class NotationsComponent extends React.Component<
     }
 
     renderMoves(): React.ReactNode[] {
-        let blackMoves = 1;
         const moves: React.ReactNode[] = [];
 
         this.props.gameState.moves.forEach((move, index) => {
-            const lastMove =
-                index > 0 ? this.props.gameState.moves[index - 1] : null;
             moves.push(
                 <tr
                     key={`${move.position}-${move.piece.color}-${move.piece.name}-${move.target}`}
                 >
-                    <td>{blackMoves}</td>
-                    <td>{move.pgn?.split('.').pop()}</td>
+                    <td>{index + 1}</td>
+                    <td>{move.pgn}</td>
                     <td>
                         {move.position}{' '}
                         <span style={{ fontFamily: 'Merida' }}>
@@ -76,9 +71,6 @@ export default class NotationsComponent extends React.Component<
                     </td>
                 </tr>
             );
-            if (move.piece.color === ChessColor.Dark) {
-                blackMoves += 1;
-            }
         });
         return moves;
     }
