@@ -3,6 +3,7 @@ import { InitialPiecePositions } from './initial-piece-positions';
 import { MovesHelper } from './moves-helper';
 import { IBoard, IMove, IPiece } from './interfaces';
 import { PositionHelper } from './position-helper';
+import { getPGN } from './notations/pgn';
 
 export class GameState {
     board: IBoard; // Represents the current state of the chessboard
@@ -143,6 +144,21 @@ export class GameState {
                 }
             }
 
+            // Switch turn to the other player
+            if (validMove.type !== MoveType.Promote) {
+                this.turn =
+                    this.turn === ChessColor.Light
+                        ? ChessColor.Dark
+                        : ChessColor.Light;
+            }
+            validMove.pgn = getPGN(
+                validMove,
+                this.fullmoveNumber,
+                this.currentValidMoves,
+                this.board
+            );
+            this.moves.push(validMove); // Record the move
+
             // Update halfmove clock
             if (
                 currPiece.name === PieceName.Pawn ||
@@ -157,16 +173,6 @@ export class GameState {
             if (this.turn === ChessColor.Dark) {
                 this.fullmoveNumber++;
             }
-
-            // Switch turn to the other player
-            if (validMove.type !== MoveType.Promote) {
-                this.turn =
-                    this.turn === ChessColor.Light
-                        ? ChessColor.Dark
-                        : ChessColor.Light;
-            }
-
-            this.moves.push(validMove); // Record the move
             this.board = newBoard;
         }
         this.computeAllValidMoves();

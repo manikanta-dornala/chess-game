@@ -1,48 +1,61 @@
 import { ChessColor, MoveType, PieceName } from '../enums';
-import { IMove } from '../interfaces';
+import { IBoard, IMove } from '../interfaces';
 
-export function getPGN(moves: IMove[]): string {
-    let pgn = '';
-    let moveNumber = 1;
-
-    moves.forEach((move, index) => {
-        if (move.piece.color === ChessColor.Light) {
-            pgn += `${moveNumber}. `;
-        }
-
-        pgn += getMovePGN(move);
-
-        if (move.piece.color === ChessColor.Dark) {
-            moveNumber++;
-        }
-        pgn += ' ';
-    });
-
-    return pgn.trim();
-}
-
-export function getMovePGN(move: IMove): string {
+export function getPGN(
+    move: IMove,
+    fullmoveNumber: number,
+    currentPossibleMoves: { [position: string]: IMove[] },
+    board: IBoard
+): string {
     const pieceNotation = getPieceNotation(move.piece.name);
-    const target = move.target;
+    const isCapture = !!board[move.target] || move.type === MoveType.EnPassant;
+    let disambiguation = '';
 
-    switch (move.type) {
-        case MoveType.Castling:
-            return target === 'g1' || target === 'g8' ? 'O-O' : 'O-O-O';
-        case MoveType.Capture:
-        case MoveType.EnPassant:
-            const captureNotation =
-                move.piece.name === PieceName.Pawn
-                    ? move.position[0]
-                    : pieceNotation;
-            return `${captureNotation}x${target}`;
-        case MoveType.Promote:
-            return `${target}=${getPieceNotation(PieceName.Queen)}`; // Default promotion to Queen
-        default:
-            return pieceNotation + target;
+    // Find moves by the same piece type that can move to the same target square
+    const similarMoves = Object.values(currentPossibleMoves)
+        .flat()
+        .filter(
+            (m) =>
+                m.piece.name === move.piece.name &&
+                m.piece.color === move.piece.color &&
+                m.target === move.target &&
+                m.position !== move.position
+        );
+
+    if (similarMoves.length > 0) {
+        // Check if pieces can be distinguished by file
+        const sameFileMoves = similarMoves.filter(
+            (m) => m.position[0] === move.position[0]
+        );
+        if (sameFileMoves.length > 0) {
+            // If there are multiple pieces on the same file, disambiguate by rank
+            const sameRankMoves = sameFileMoves.filter(
+                (m) => m.position[1] === move.position[1]
+            );
+            if (sameRankMoves.length > 0) {
+                disambiguation = move.position; // use full square notation (file + rank)
+            } else {
+                disambiguation = move.position[1]; // use rank
+            }
+        } else {
+            disambiguation = move.position[0]; // use file
+        }
     }
+
+    const captureNotation = isCapture ? 'x' : '';
+    const targetSquare = move.target;
+    const promotion =
+        move.type === MoveType.Promote
+            ? `=${getPieceNotation(move.piece.name)}`
+            : '';
+    const enPassantSuffix = move.type === MoveType.EnPassant ? ' e.p.' : '';
+
+    const moveNumber =
+        move.piece.color === ChessColor.Light ? `${fullmoveNumber}. ` : '';
+    return `${moveNumber}${pieceNotation}${disambiguation}${captureNotation}${targetSquare}${promotion}${enPassantSuffix}`;
 }
 
-function getPieceNotation(name: PieceName): string {
+export function getPieceNotation(name: PieceName): string {
     switch (name) {
         case PieceName.Knight:
             return 'N';

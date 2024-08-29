@@ -60,9 +60,9 @@ export default class ChessComponent extends React.Component {
                             />
                         </Popover>
                     )}
-                    {this.isCheckMate() && (
+                    {this.noMoreMoves() && (
                         <Popover
-                            show={this.isCheckMate()}
+                            show={this.noMoreMoves()}
                             onClose={() => {}}
                             coord={{
                                 x:
@@ -77,7 +77,9 @@ export default class ChessComponent extends React.Component {
                                 className="grid"
                                 style={{ background: 'white', padding: '3em' }}
                             >
-                                checkmate {this.gameState.turn} king
+                                {this.isKingInCheck()
+                                    ? `checkmate ${this.gameState.turn} king`
+                                    : 'draw by stalemate'}
                             </div>
                         </Popover>
                     )}
@@ -271,14 +273,12 @@ export default class ChessComponent extends React.Component {
         );
     }
 
-    private isCheckMate() {
-        const isCheckMate = MovesHelper.isCheckMate(
+    private noMoreMoves() {
+        return MovesHelper.noPieceCanMove(
             this.gameState.turn,
             this.gameState.board,
             this.gameState.lastMove()
         );
-
-        return isCheckMate;
     }
 
     private getPixelSize(): number {

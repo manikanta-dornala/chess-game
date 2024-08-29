@@ -110,6 +110,7 @@ export abstract class MovesHelper {
                     type: MoveType.Castling,
                     position: kingPos,
                     target: kingTargetPos[i],
+                    pgn: null,
                 });
             }
         }
@@ -132,7 +133,7 @@ export abstract class MovesHelper {
 
         // Helper function to add a move
         const addMove = (target: string, type: MoveType) =>
-            moves.push({ piece, type, target, position });
+            moves.push({ piece, type, target, position, pgn: null });
 
         const forwardOne = `${file}${rank + moveDir}`;
         const forwardTwo = `${file}${rank + 2 * moveDir}`;
@@ -212,6 +213,7 @@ export abstract class MovesHelper {
                             type: MoveType.Capture,
                             target: targetPos,
                             position,
+                            pgn: null,
                         });
                     }
                     // Stop moving forward there's a piece in the way
@@ -223,6 +225,7 @@ export abstract class MovesHelper {
                         type: MoveType.Move,
                         target: targetPos,
                         position,
+                        pgn: null,
                     };
                     if (move) moves.push(move);
                 }
@@ -268,15 +271,11 @@ export abstract class MovesHelper {
         return isKingInCheck;
     }
 
-    public static isCheckMate(
+    public static noPieceCanMove(
         turn: ChessColor,
         board: IBoard,
         lastMove: IMove | null
     ): boolean {
-        let kingPosition = PositionHelper.getKingPosition(turn, board);
-
-        if (!kingPosition) return false;
-
         let legalMoves: IMove[] = [];
         PositionHelper.validSquares.forEach((position) => {
             const piece = board[position];

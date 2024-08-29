@@ -14,6 +14,7 @@ export interface IMove {
     type: MoveType;
     piece: IPiece;
     position: string;
+    pgn: string | null;
 }
 
 export interface IMoveSet {

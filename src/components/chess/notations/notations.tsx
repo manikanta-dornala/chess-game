@@ -2,7 +2,7 @@ import React from 'react';
 import { GameState } from '../../../common/game';
 import { ChessColor } from '../../../common/enums';
 import getFEN from '../../../common/notations/fen';
-import { getPGN, getMovePGN } from '../../../common/notations/pgn';
+import { getPGN } from '../../../common/notations/pgn';
 import './notations';
 import { PieceSymbols } from '../../../common/initial-piece-positions';
 export default class NotationsComponent extends React.Component<
@@ -41,7 +41,9 @@ export default class NotationsComponent extends React.Component<
                         (Portable Game Notation)
                     </h3>
                     <p className="notations">
-                        {getPGN(this.props.gameState.moves)}
+                        {this.props.gameState.moves
+                            .map((move) => move.pgn)
+                            .join(' ')}
                     </p>
                     <h3>Moves</h3>
                     <table className="moves-table">
@@ -64,7 +66,7 @@ export default class NotationsComponent extends React.Component<
                     key={`${move.position}-${move.piece.color}-${move.piece.name}-${move.target}`}
                 >
                     <td>{blackMoves}</td>
-                    <td>{getMovePGN(move)}</td>
+                    <td>{move.pgn?.split('.').pop()}</td>
                     <td>
                         {move.position}{' '}
                         <span style={{ fontFamily: 'Merida' }}>
