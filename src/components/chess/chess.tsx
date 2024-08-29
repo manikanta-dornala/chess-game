@@ -11,6 +11,7 @@ import { MovesHelper } from '../../common/moves-helper';
 import './chess.css';
 import ScoreComponent from './score/score';
 import NotationsComponent from './notations/notations';
+import AlertsComponent from './alerts/alerts';
 
 export default class ChessComponent extends React.Component {
     private boardRef = createRef<HTMLDivElement>();
@@ -60,30 +61,15 @@ export default class ChessComponent extends React.Component {
                             />
                         </Popover>
                     )}
-                    {this.noMoreMoves() && (
-                        <Popover
-                            show={this.noMoreMoves()}
-                            onClose={() => {}}
-                            coord={{
-                                x:
-                                    this.boardRef.current!.offsetLeft +
-                                    275 * this.getPixelSize(),
-                                y:
-                                    this.boardRef.current!.offsetTop +
-                                    350 * this.getPixelSize(),
-                            }}
-                        >
-                            <div
-                                className="grid"
-                                style={{ background: 'white', padding: '3em' }}
-                            >
-                                {this.isKingInCheck()
-                                    ? `checkmate ${this.gameState.turn} king`
-                                    : 'draw by stalemate'}
-                            </div>
-                        </Popover>
-                    )}
                 </div>
+                {this.noMoreMoves() && (
+                    <AlertsComponent
+                        gameState={this.gameState}
+                        x={(() => this.boardRef!.current!.offsetLeft)()}
+                        y={this.boardRef.current!.offsetTop}
+                        pixelSize={this.getPixelSize()}
+                    ></AlertsComponent>
+                )}
                 <div className="info">
                     <button className="btn" onClick={this.newGame}>
                         New Game
@@ -266,23 +252,15 @@ export default class ChessComponent extends React.Component {
         return !this.grabbedPiece && element.classList.contains('chess-piece');
     }
 
-    private isKingInCheck() {
-        return MovesHelper.isKingInCheck(
-            this.gameState.turn,
-            this.gameState.board
-        );
-    }
-
-    private noMoreMoves() {
-        return MovesHelper.noPieceCanMove(
-            this.gameState.turn,
-            this.gameState.board,
-            this.gameState.lastMove()
-        );
-    }
-
     private getPixelSize(): number {
         const p = Math.min(window.innerWidth, window.innerHeight) / 1000.0;
         return p;
     }
+
+    private noMoreMoves = () =>
+        MovesHelper.noPieceCanMove(
+            this.gameState.turn,
+            this.gameState.board,
+            this.gameState.lastMove()
+        );
 }

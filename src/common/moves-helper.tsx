@@ -5,6 +5,7 @@ import { PieceMoveSets } from './piece-move-sets';
 import { cache } from './utils';
 
 export abstract class MovesHelper {
+    @cache
     public static getLegalMoves(
         turn: ChessColor,
         piece: IPiece,
@@ -60,6 +61,7 @@ export abstract class MovesHelper {
         return possibleMoves;
     }
 
+    @cache
     public static getCastlingMoves(turn: ChessColor, board: IBoard): IMove[] {
         const moves: IMove[] = [];
 
@@ -285,7 +287,7 @@ export abstract class MovesHelper {
                 );
             }
             if (legalMoves.length > 0) {
-                // Legal Moves exist, king can move
+                // Legal Moves exist, somebody can move
                 return false;
             }
         });
