@@ -1,15 +1,15 @@
 import { ChessColor } from '../enums';
 import { IMove } from '../interfaces';
 import { Board } from '../Board';
+import { IBot } from './bot';
 import { MovesHelper } from '../moves-helper';
 import { PositionHelper } from '../position-helper';
 
-export class RandomBot {
+export class RandomBot implements IBot {
     turn: ChessColor;
     constructor(turn: ChessColor) {
         this.turn = turn;
     }
-
     getMove(board: Board, lastMove: IMove | null): IMove | null {
         const myLegalMoves: IMove[] = [];
         PositionHelper.validSquares.forEach((position) => {

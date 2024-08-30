@@ -137,6 +137,7 @@ export default class ChessComponent extends React.Component {
 
     private handleDragStart = (e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
+
         if (this.isGrabbable(target)) {
             this.grabPiece(e.clientX, e.clientY);
         }

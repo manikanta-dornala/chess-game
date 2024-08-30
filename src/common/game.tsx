@@ -23,7 +23,6 @@ export class GameState {
         this.board = new Board(InitialPiecePositions); // Initialize the board with the default piece positions
 
         this.computeAllValidMoves();
-        console.log(PositionHelper.validSquares);
     }
 
     // Reverts the game state to the previous turn

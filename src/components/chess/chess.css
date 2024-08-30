@@ -1,5 +1,5 @@
 :root {
-    --board-size: 80vmin;
+    --board-size: calc(max(50vmin, 800px));
     --square-size: calc(var(--board-size) / 8);
     --light-square-color: #ececd0;
     --dark-square-color: #779656;
@@ -19,7 +19,7 @@
 .wrapper {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    height: 100vh;
+    /* height: 100vh; */
     place-content: center;
     font-size: calc(16 * var(--board-size) / 800);
 }
