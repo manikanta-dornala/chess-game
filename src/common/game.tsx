@@ -1,15 +1,16 @@
 import { ChessColor, MoveType, PieceName } from './enums';
 import { InitialPiecePositions } from './initial-piece-positions';
 import { MovesHelper } from './moves-helper';
-import { IBoard, IMove, IPiece } from './interfaces';
+import { IMove, IPiece } from './interfaces';
+import { Board } from './Board';
 import { PositionHelper } from './position-helper';
 import { getMovePGN } from './notations/pgn';
 
 export class GameState {
-    board: IBoard; // Represents the current state of the chessboard
+    board: Board; // Represents the current state of the chessboard
     turn: ChessColor = ChessColor.Light; // Tracks whose turn it is, starts with Light
     moves: Array<IMove> = []; // Tracks all moves made in the game
-    boards: Array<IBoard> = []; // History of board states for undo functionality
+    boards: Array<Board> = []; // History of board states for undo functionality
     blockMoves = false; // Tracks if game is currently halted for Pawn Promotion
     halfmoveClock: number = 0; // Counts halfmoves since last capture or pawn move
     fullmoveNumber: number = 1; // Counts full moves
@@ -19,16 +20,10 @@ export class GameState {
     };
     currentValidMoves: { [position: string]: IMove[] } = {};
     constructor() {
-        this.board = { ...InitialPiecePositions }; // Initialize the board with the default piece positions
-        this.board['lightCastlingRight'] = {
-            name: PieceName.King,
-            color: ChessColor.Light,
-        };
-        this.board['darkCastlingRight'] = {
-            name: PieceName.King,
-            color: ChessColor.Dark,
-        };
+        this.board = new Board(InitialPiecePositions); // Initialize the board with the default piece positions
+
         this.computeAllValidMoves();
+        console.log(PositionHelper.validSquares);
     }
 
     // Reverts the game state to the previous turn
@@ -51,7 +46,7 @@ export class GameState {
                 (lastMove &&
                     (lastMove.type === MoveType.Capture ||
                         lastMove.type === MoveType.EnPassant)) ||
-                (lastMove && this.board[lastMove.target])
+                (lastMove && this.board.get(lastMove.target))
             ) {
                 this.capturedPieces[this.turn].pop();
             }
@@ -62,14 +57,13 @@ export class GameState {
     computeAllValidMoves() {
         this.currentValidMoves = {};
         PositionHelper.validSquares.forEach((position) => {
-            const piece = this.board[position];
+            const piece = this.board.get(position);
             if (piece) {
                 this.currentValidMoves[position] = MovesHelper.getLegalMoves(
                     this.turn,
                     piece,
                     position,
-                    this.board,
-                    this.lastMove()
+                    this.board
                 );
             }
         });
@@ -77,27 +71,39 @@ export class GameState {
 
     // Executes a move if it's valid
     makeMove(curr: string, target: string): IMove | undefined {
-        const currPiece = this.board[curr];
+        const currPiece = this.board.get(curr);
         if (!currPiece || this.blockMoves) return; // Exit if there's no piece to move
 
         const validMove = this.currentValidMoves[curr].find(
             (move) => move.target === target
         );
         if (validMove) {
-            const newBoard = { ...this.board }; // Make a copy of the board
+            const newBoard = this.board.newCopy(); // Make a copy of the board
             this.boards.push(this.board); // Save the current board state
-            const pieceAtTarget = this.board[validMove.target];
-            newBoard[target] = currPiece; // Move the piece to the target square
-            newBoard[curr] = null; // Clear the original square
+            const pieceAtTarget = this.board.get(validMove.target);
+            newBoard.set(target, currPiece); // Move the piece to the target square
+            newBoard.set(curr, null); // Clear the original square
 
             if (pieceAtTarget) {
                 this.capturedPieces[this.turn].push(pieceAtTarget.name);
             }
 
+            newBoard.enPassantPossible = validMove.type === MoveType.DoubleMove;
+            if (newBoard.enPassantPossible) {
+                newBoard.enPassantCapturePosition = validMove.target;
+                const file = validMove.target[0];
+                const rank =
+                    validMove.piece.color === ChessColor.Light ? '3' : '6';
+                newBoard.enPassantTarget = `${file}${rank}`;
+            } else {
+                newBoard.enPassantCapturePosition = null;
+                newBoard.enPassantTarget = null;
+            }
+
             if (validMove.type === MoveType.EnPassant) {
                 const lastMove = this.lastMove();
                 if (lastMove) {
-                    newBoard[lastMove.target] = null;
+                    newBoard.set(lastMove.target, null);
                     this.capturedPieces[this.turn].push(PieceName.Pawn);
                 } // Handle En Passant capture
             }
@@ -130,9 +136,9 @@ export class GameState {
                 validMove.type === MoveType.Move
             ) {
                 if (validMove.piece.color === ChessColor.Light)
-                    newBoard['lightCastlingRight'] = null;
+                    newBoard.lightCastlingRight = false;
                 if (validMove.piece.color === ChessColor.Dark)
-                    newBoard['darkCastlingRight'] = null;
+                    newBoard.darkCastlingRight = false;
             }
 
             if (validMove.piece.name === PieceName.Pawn) {
@@ -180,7 +186,7 @@ export class GameState {
     }
 
     handlePawnPromotion(position: string, piece: IPiece) {
-        this.board[position] = piece;
+        this.board.set(position, piece);
         this.blockMoves = false;
         this.turn =
             this.turn === ChessColor.Light ? ChessColor.Dark : ChessColor.Light; // Switch turn to the other player

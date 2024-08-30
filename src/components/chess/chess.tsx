@@ -12,22 +12,56 @@ import './chess.css';
 import ScoreComponent from './score/score';
 import NotationsComponent from './notations/notations';
 import AlertsComponent from './alerts/alerts';
+import { RandomBot } from '../../common/bots/random-bot';
 
 export default class ChessComponent extends React.Component {
     private boardRef = createRef<HTMLDivElement>();
     private grabbedPiece: IPiece | null = null;
     private grabbedPieceCurrPosition: string = '';
-    private gameState = new GameState();
+    private gameState: GameState;
     private highlightPositions: string[] = [];
     private bottomColor = ChessColor.Light;
 
     private showPawnPromotionLogic = false;
     private pawnPromotionPosition: string | null = null;
     private pawnPromotionCoord: { x: number; y: number } | null = null;
-
+    private bot = new RandomBot(ChessColor.Dark);
     constructor(props: any) {
         super(props);
         this.handlePromotionSelect = this.handlePromotionSelect.bind(this);
+        this.gameState = new GameState();
+        this.bot = new RandomBot(ChessColor.Dark);
+        this.makeTurn = this.makeTurn.bind(this);
+        // setInterval(this.makeTurn, 1000);
+    }
+
+    private makeTurn() {
+        if (this.gameState.turn === ChessColor.Dark) {
+            const lastMove = this.gameState.lastMove();
+            if (
+                lastMove &&
+                lastMove.type === MoveType.Promote &&
+                lastMove.piece.color === this.bot.turn
+            ) {
+                this.gameState.board.set(lastMove.target, {
+                    name: PieceName.Queen,
+                    color: this.bot.turn,
+                });
+                this.gameState.turn =
+                    this.gameState.turn === ChessColor.Dark
+                        ? ChessColor.Light
+                        : ChessColor.Dark;
+            } else {
+                const move = this.bot.getMove(
+                    this.gameState.board,
+                    this.gameState.lastMove()
+                );
+                if (move) {
+                    this.gameState.makeMove(move?.position, move?.target);
+                }
+            }
+            this.forceUpdate();
+        }
     }
 
     render(): React.ReactNode {
@@ -130,7 +164,7 @@ export default class ChessComponent extends React.Component {
 
     private grabPiece = (x: number, y: number) => {
         const position = this.getPositionAtCoord(x, y);
-        const piece = this.gameState.board[position];
+        const piece = this.gameState.board.get(position);
         if (piece) {
             this.highlightPositions = this.gameState.currentValidMoves[
                 position
@@ -281,9 +315,5 @@ export default class ChessComponent extends React.Component {
     }
 
     private noMoreMoves = () =>
-        MovesHelper.noPieceCanMove(
-            this.gameState.turn,
-            this.gameState.board,
-            this.gameState.lastMove()
-        );
+        MovesHelper.noPieceCanMove(this.gameState.turn, this.gameState.board);
 }

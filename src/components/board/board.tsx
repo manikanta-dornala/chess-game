@@ -4,11 +4,12 @@ import './board.css';
 import { ChessColor, PieceName } from '../../common/enums';
 import SquareComponent from './square/square';
 import { PositionHelper } from '../../common/position-helper';
-import { IBoard, IMove } from '../../common/interfaces';
+import { IMove } from '../../common/interfaces';
+import { Board } from '../../common/Board';
 import { MovesHelper } from '../../common/moves-helper';
 
 export default class BoardComponent extends React.Component<{
-    board: IBoard;
+    board: Board;
     bottomColor: ChessColor;
     highlightPositions: Array<string>;
     grabbedPiecePosition: string;
@@ -30,7 +31,7 @@ export default class BoardComponent extends React.Component<{
                     fileIndex: i,
                     bottomColor: bottomColor,
                 });
-                const piece = board[position];
+                const piece = board.get(position);
                 const shouldHighlight = highlightPositions.includes(position);
                 const isPieceAtPositionGrabbed =
                     grabbedPiecePosition === position;

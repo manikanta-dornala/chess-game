@@ -1,6 +1,7 @@
 import { ChessColor, PieceName, MoveType } from '../enums';
 import { GameState } from '../game';
-import { IBoard, ICastlingRights, IMove } from '../interfaces';
+import { ICastlingRights, IMove } from '../interfaces';
+import { Board } from '../Board';
 
 export default function getFEN({
     board,
@@ -9,7 +10,7 @@ export default function getFEN({
     halfmoveClock,
     fullmoveNumber,
 }: {
-    board: IBoard;
+    board: Board;
     turn: ChessColor;
     lastMove: IMove | null;
     halfmoveClock: number;
@@ -18,8 +19,8 @@ export default function getFEN({
     let fen = '';
 
     const castlingRights: ICastlingRights = {
-        [ChessColor.Light]: !!board['lightCastlingRight'],
-        [ChessColor.Dark]: !!board['darkCastlingRight'],
+        [ChessColor.Light]: board.lightCastlingRight,
+        [ChessColor.Dark]: board.darkCastlingRight,
     };
 
     // 1. Piece placement
@@ -27,7 +28,7 @@ export default function getFEN({
         let emptySquares = 0;
         for (let file = 0; file < 8; file++) {
             const position = String.fromCharCode(97 + file) + rank; // e.g., "a8", "b8", etc.
-            const piece = board[position];
+            const piece = board.get(position);
 
             if (piece) {
                 if (emptySquares > 0) {

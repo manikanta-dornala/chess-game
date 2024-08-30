@@ -1,6 +1,7 @@
 import { PositionHelper } from './position-helper';
 import { ChessColor, MoveType, PieceName } from './enums';
-import { createMove, IBoard, IMove, IPiece } from './interfaces';
+import { createMove, IMove, IPiece } from './interfaces';
+import { Board } from './Board';
 import { PieceMoveSets } from './piece-move-sets';
 import { cache } from './utils';
 
@@ -10,23 +11,17 @@ export abstract class MovesHelper {
         turn: ChessColor,
         piece: IPiece,
         position: string,
-        board: IBoard,
-        lastMove: IMove | null
+        board: Board
     ): IMove[] {
-        const moves = this.getPossibleMoves(
-            turn,
-            piece,
-            position,
-            board,
-            lastMove
-        );
+        const moves = this.getPossibleMoves(turn, piece, position, board);
 
         return moves.filter((move) => {
-            const newboard = { ...board };
-            newboard[move.target] = move.piece;
-            newboard[position] = null;
+            const newboard = board.newCopy();
+            newboard.set(move.target, move.piece);
+            newboard.set(position, null);
             if (move.type === MoveType.EnPassant) {
-                if (lastMove) newboard[lastMove.target] = null; // Handle En Passant capture
+                if (board.enPassantPossible && board.enPassantCapturePosition)
+                    newboard.set(board.enPassantCapturePosition, null); // Handle En Passant capture
             }
             if (this.isKingInCheck(turn, newboard)) return false;
             return true;
@@ -39,18 +34,20 @@ export abstract class MovesHelper {
         turn: ChessColor,
         piece: IPiece,
         position: string,
-        board: IBoard,
-        lastMove: IMove | null
+        board: Board
     ): IMove[] {
         if (turn !== piece.color) return []; // Exit if it's not this piece's turn
 
         const possibleMoves =
             piece.name === PieceName.Pawn
-                ? this.getPawnMoves(piece, position, board, lastMove)
+                ? this.getPawnMoves(piece, position, board)
                 : this.getPieceMoves(piece, position, board);
-
+        const castlingRight =
+            turn === ChessColor.Light
+                ? board.lightCastlingRight
+                : board.darkCastlingRight;
         if (
-            board[turn + 'CastlingRight'] &&
+            castlingRight &&
             piece.name === PieceName.King &&
             piece.color === turn
         ) {
@@ -62,7 +59,7 @@ export abstract class MovesHelper {
     }
 
     @cache
-    public static getCastlingMoves(turn: ChessColor, board: IBoard): IMove[] {
+    public static getCastlingMoves(turn: ChessColor, board: Board): IMove[] {
         const moves: IMove[] = [];
 
         const kingPos = turn === ChessColor.Light ? 'e1' : 'e8';
@@ -100,11 +97,11 @@ export abstract class MovesHelper {
         for (let i = 0; i < 2; i++) {
             const rookPos = rooksPos[i];
             const rookIsMine =
-                board[rookPos]?.name === PieceName.Rook &&
-                board[rookPos]?.color === turn;
+                board.get(rookPos)?.name === PieceName.Rook &&
+                board.get(rookPos)?.color === turn;
             let pathIsClear = true;
             emptyPos[i].forEach((pos) => {
-                pathIsClear = pathIsClear && !board[pos];
+                pathIsClear = pathIsClear && !board.get(pos);
             });
             if (rookIsMine && pathIsClear) {
                 moves.push(
@@ -125,8 +122,7 @@ export abstract class MovesHelper {
     public static getPawnMoves(
         piece: IPiece,
         position: string,
-        board: IBoard,
-        lastMove: IMove | null
+        board: Board
     ): IMove[] {
         const [file, rank] = [position[0], parseInt(position[1])];
         const moves: IMove[] = [];
@@ -146,13 +142,16 @@ export abstract class MovesHelper {
         ];
 
         // Handle normal forward movement
-        if (PositionHelper.validSquares.has(forwardOne) && !board[forwardOne]) {
+        if (
+            PositionHelper.validSquares.has(forwardOne) &&
+            !board.get(forwardOne)
+        ) {
             addMove(forwardOne, MoveType.Move);
             // Handle two-step move from base rank
             if (
                 rank === baseRank &&
                 PositionHelper.validSquares.has(forwardTwo) &&
-                !board[forwardTwo]
+                !board.get(forwardTwo)
             ) {
                 addMove(forwardTwo, MoveType.DoubleMove);
             }
@@ -161,14 +160,15 @@ export abstract class MovesHelper {
         // Handle captures and En Passant
         captureTargets.forEach((target) => {
             if (PositionHelper.validSquares.has(target)) {
-                const targetPiece = board[target];
+                const targetPiece = board.get(target);
                 if (targetPiece && targetPiece.color !== piece.color) {
                     addMove(target, MoveType.Capture); // Capture an enemy piece
                 } else if (rank === enPassantRank && !targetPiece) {
                     const enPassantPawnPos = `${target[0]}${rank}`;
                     if (
-                        lastMove?.type === MoveType.DoubleMove &&
-                        lastMove.target === enPassantPawnPos
+                        board.enPassantPossible &&
+                        board.enPassantCapturePosition &&
+                        board.enPassantCapturePosition === enPassantPawnPos
                     ) {
                         addMove(target, MoveType.EnPassant); // Handle En Passant
                     }
@@ -184,7 +184,7 @@ export abstract class MovesHelper {
     public static getPieceMoves(
         piece: IPiece,
         position: string,
-        board: IBoard
+        board: Board
     ): IMove[] {
         const [file, rank] = [position[0], parseInt(position[1])];
         const moves: IMove[] = [];
@@ -207,7 +207,7 @@ export abstract class MovesHelper {
                 // Stop if the target is not valid
                 if (!PositionHelper.validSquares.has(targetPos)) break;
 
-                const targetPiece = board[targetPos];
+                const targetPiece = board.get(targetPos);
                 if (targetPiece) {
                     // Capture an enemy piece
                     if (targetPiece.color !== piece.color) {
@@ -240,7 +240,7 @@ export abstract class MovesHelper {
 
     @cache
     // Determines if the king of the specified color is in check
-    public static isKingInCheck(turn: ChessColor, board: IBoard): boolean {
+    public static isKingInCheck(turn: ChessColor, board: Board): boolean {
         const kingPosition = PositionHelper.getKingPosition(turn, board);
 
         if (!kingPosition) return false;
@@ -252,18 +252,16 @@ export abstract class MovesHelper {
     public static isKingInCheckAt(
         kingPosition: string,
         turn: ChessColor,
-        board: IBoard
+        board: Board
     ) {
         // Check if any opposing piece can attack the king's position
-        const opponentColor =
-            turn === ChessColor.Light ? ChessColor.Dark : ChessColor.Light;
         let isKingInCheck = false;
         PositionHelper.validSquares.forEach((position) => {
-            const piece = board[position];
-            if (piece?.color === opponentColor) {
+            const piece = board.get(position);
+            if (piece && piece.color !== turn) {
                 const possibleMoves =
                     piece.name === PieceName.Pawn
-                        ? this.getPawnMoves(piece, position, board, null)
+                        ? this.getPawnMoves(piece, position, board)
                         : this.getPieceMoves(piece, position, board);
                 if (possibleMoves.map((e) => e.target).includes(kingPosition)) {
                     isKingInCheck = true;
@@ -274,17 +272,13 @@ export abstract class MovesHelper {
         return isKingInCheck;
     }
 
-    public static noPieceCanMove(
-        turn: ChessColor,
-        board: IBoard,
-        lastMove: IMove | null
-    ): boolean {
+    public static noPieceCanMove(turn: ChessColor, board: Board): boolean {
         let legalMoves: IMove[] = [];
         PositionHelper.validSquares.forEach((position) => {
-            const piece = board[position];
+            const piece = board.get(position);
             if (piece?.color === turn) {
                 legalMoves = legalMoves.concat(
-                    this.getLegalMoves(turn, piece, position, board, lastMove)
+                    this.getLegalMoves(turn, piece, position, board)
                 );
             }
             if (legalMoves.length > 0) {

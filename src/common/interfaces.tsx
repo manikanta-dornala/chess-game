@@ -5,10 +5,6 @@ export interface IPiece {
     color: ChessColor;
 }
 
-export interface IBoard {
-    [position: string]: IPiece | null;
-}
-
 export interface IMove {
     target: string;
     type: MoveType;

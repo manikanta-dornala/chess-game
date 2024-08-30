@@ -1,5 +1,5 @@
 import { ChessColor, PieceName } from './enums';
-import { IBoard } from './interfaces';
+import { Board } from './Board';
 import { cache } from './utils';
 
 export abstract class PositionHelper {
@@ -63,11 +63,11 @@ export abstract class PositionHelper {
     @cache
     public static getKingPosition(
         turn: ChessColor,
-        board: IBoard
+        board: Board
     ): string | null {
         let kingPosition = null;
         this.validSquares.forEach((position) => {
-            const piece = board[position];
+            const piece = board.get(position);
             if (piece?.name === PieceName.King && piece?.color === turn) {
                 kingPosition = position;
             }

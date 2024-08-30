@@ -1,5 +1,6 @@
 import { ChessColor, MoveType, PieceName } from '../enums';
-import { IBoard, IMove } from '../interfaces';
+import { IMove } from '../interfaces';
+import { Board } from '../Board';
 
 export function getFullPGN(moves: IMove[]): string {
     return moves
@@ -12,10 +13,11 @@ export function getFullPGN(moves: IMove[]): string {
 export function getMovePGN(
     move: IMove,
     currentPossibleMoves: { [position: string]: IMove[] },
-    board: IBoard
+    board: Board
 ): string {
     const pieceNotation = getPieceNotation(move.piece.name);
-    const isCapture = !!board[move.target] || move.type === MoveType.EnPassant;
+    const isCapture =
+        !!board.get(move.target) || move.type === MoveType.EnPassant;
     let disambiguation = '';
 
     // Find moves by the same piece type that can move to the same target square
