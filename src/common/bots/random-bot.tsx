@@ -12,7 +12,7 @@ export class RandomBot implements IBot {
         this.turn = turn;
         this.isMakingTurn = false;
     }
-    getMove(board: Board, lastMove: IMove | null): IMove | null {
+    async getMove(board: Board, lastMove: IMove | null): Promise<IMove | null> {
         this.isMakingTurn = true;
         const myLegalMoves: IMove[] = [];
         PositionHelper.validSquares.forEach((position) => {
@@ -27,10 +27,16 @@ export class RandomBot implements IBot {
                 myLegalMoves.push(...moves);
             }
         });
+
+        let result: IMove | null = null;
         if (myLegalMoves.length) {
             const randIndex = Math.floor(Math.random() * myLegalMoves.length);
-            return myLegalMoves[randIndex];
+            result = myLegalMoves[randIndex];
         }
-        return null;
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(result);
+            });
+        });
     }
 }

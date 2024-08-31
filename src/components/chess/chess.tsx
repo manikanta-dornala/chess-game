@@ -319,7 +319,7 @@ export default class ChessComponent extends React.Component<
     private noMoreMoves = () =>
         MovesHelper.noPieceCanMove(this.gameState.turn, this.gameState.board);
 
-    private makeBotTurn() {
+    private async makeBotTurn() {
         if (
             this.props.bot &&
             this.gameState.turn === this.props.bot.turn &&
@@ -341,7 +341,7 @@ export default class ChessComponent extends React.Component<
                         ? ChessColor.Light
                         : ChessColor.Dark;
             } else {
-                const move = this.props.bot.getMove(
+                const move = await this.props.bot.getMove(
                     this.gameState.board,
                     this.gameState.lastMove()
                 );
