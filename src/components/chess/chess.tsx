@@ -12,10 +12,10 @@ import './chess.css';
 import ScoreComponent from './score/score';
 import NotationsComponent from './notations/notations';
 import AlertsComponent from './alerts/alerts';
-import { IBot } from '../../common/bots/bot';
+import { Bot } from '../../common/bots/bot';
 
 export default class ChessComponent extends React.Component<
-    { bottomColor: ChessColor; bot: IBot | null; id: number },
+    { bottomColor: ChessColor; bot: Bot | null; id: number },
     any
 > {
     private boardRef = createRef<HTMLDivElement>();
@@ -32,20 +32,17 @@ export default class ChessComponent extends React.Component<
         this.handlePromotionSelect = this.handlePromotionSelect.bind(this);
         this.gameState = new GameState();
         this.bottomColor = this.props.bottomColor;
-        if (this.props.bot) {
-            this.makeBotTurn = this.makeBotTurn.bind(this);
-            setInterval(this.makeBotTurn, 100);
-        }
+
+        this.makeBotTurn = this.makeBotTurn.bind(this);
+        setInterval(this.makeBotTurn, 100);
     }
 
     componentDidUpdate(
         prevProps: Readonly<{
             bottomColor: ChessColor;
-            bot: IBot | null;
+            bot: Bot | null;
             id: number;
-        }>,
-        prevState: Readonly<any>,
-        snapshot?: any
+        }>
     ): void {
         if (prevProps.id !== this.props.id) {
             this.newGame();
@@ -237,6 +234,7 @@ export default class ChessComponent extends React.Component<
 
     newGame = () => {
         this.resetPawnPromotion();
+        this.bottomColor = this.props.bottomColor;
         this.gameState = new GameState();
         this.forceUpdate();
     };

@@ -8,3 +8,26 @@ button {
     border-radius: 0.5em; /* Adjust border-radius if needed */
     border: 0.01em black solid;
 }
+
+:root {
+    --board-size: 80vmin;
+    --square-size: calc(var(--board-size) / 8);
+    --light-square-color: #ececd0;
+    --dark-square-color: #779656;
+    --highlight-border-color: lightgreen;
+    --highlight-border-width: 0.1em;
+    --highlight-shadow-light: 0 0 2em 0.5em lightgreen inset,
+        0 0 2em 0.7em seagreen inset;
+    --highlight-shadow-dark: 0 0 2em 0.7em lightgreen inset,
+        0 0 2em 0.5em wheat inset;
+    --highlight-shadow-check: 0 0 2em 0.7em maroon inset,
+        0 0 2em 0.5em red inset;
+    --piece-size: calc(var(--board-size) / 12);
+    --text-color-light: black;
+    --text-color-dark: white;
+}
+
+.selected-options {
+    padding: 10px;
+    font-size: 1em;
+}

@@ -1,17 +1,10 @@
-import { ChessColor } from '../enums';
 import { IMove } from '../interfaces';
 import { Board } from '../Board';
-import { IBot } from './bot';
+import { Bot } from './bot';
 import { MovesHelper } from '../moves-helper';
 import { PositionHelper } from '../position-helper';
 
-export class RandomBot implements IBot {
-    turn: ChessColor;
-    isMakingTurn: boolean;
-    constructor(turn: ChessColor) {
-        this.turn = turn;
-        this.isMakingTurn = false;
-    }
+export class RandomBot extends Bot {
     async getMove(board: Board, lastMove: IMove | null): Promise<IMove | null> {
         this.isMakingTurn = true;
         const myLegalMoves: IMove[] = [];
