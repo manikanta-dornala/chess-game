@@ -272,6 +272,7 @@ export abstract class MovesHelper {
         return isKingInCheck;
     }
 
+    @cache
     public static noPieceCanMove(turn: ChessColor, board: Board): boolean {
         let legalMoves: IMove[] = [];
         PositionHelper.validSquares.forEach((position) => {

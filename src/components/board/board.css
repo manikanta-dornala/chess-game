@@ -5,5 +5,5 @@
     height: var(--board-size);
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);
-    border: 0.1em solid black;
+    padding: 0px;
 }

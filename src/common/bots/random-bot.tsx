@@ -7,10 +7,13 @@ import { PositionHelper } from '../position-helper';
 
 export class RandomBot implements IBot {
     turn: ChessColor;
+    isMakingTurn: boolean;
     constructor(turn: ChessColor) {
         this.turn = turn;
+        this.isMakingTurn = false;
     }
     getMove(board: Board, lastMove: IMove | null): IMove | null {
+        this.isMakingTurn = true;
         const myLegalMoves: IMove[] = [];
         PositionHelper.validSquares.forEach((position) => {
             const piece = board.get(position);

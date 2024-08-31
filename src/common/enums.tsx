@@ -12,11 +12,6 @@ export enum PieceName {
     King = 'king',
 }
 
-export enum ChessDirection {
-    Up = 'up',
-    Down = 'Down',
-}
-
 export enum MoveType {
     Move = 'move',
     DoubleMove = 'Move',

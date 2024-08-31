@@ -1,5 +1,5 @@
 :root {
-    --board-size: calc(max(50vmin, 800px));
+    --board-size: 80vmin;
     --square-size: calc(var(--board-size) / 8);
     --light-square-color: #ececd0;
     --dark-square-color: #779656;
@@ -19,7 +19,6 @@
 .wrapper {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    /* height: 100vh; */
     place-content: center;
     font-size: calc(16 * var(--board-size) / 800);
 }
@@ -39,7 +38,6 @@
     border-bottom: 0.1em solid gray;
     overflow: scroll;
     word-wrap: break-word;
-    width: 100%;
 }
 
 @media (max-width: 768px) {
@@ -48,16 +46,17 @@
     }
 
     .chess-container {
+        height: calc(var(--board-size) * 1.2);
         grid-column-start: 1;
         grid-column-end: 2;
     }
 
     .info-container {
+        height: 100%;
         grid-column-start: 1;
         grid-column-end: 2;
         font-size: calc(24 * var(--board-size) / 800);
         display: grid;
-        place-content: center;
         margin: calc(var(--board-size) / 100);
     }
 }

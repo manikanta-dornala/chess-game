@@ -13,46 +13,69 @@ import ScoreComponent from './score/score';
 import NotationsComponent from './notations/notations';
 import AlertsComponent from './alerts/alerts';
 import { RandomBot } from '../../common/bots/random-bot';
+import { IBot } from '../../common/bots/bot';
 
-export default class ChessComponent extends React.Component {
+export default class ChessComponent extends React.Component<
+    { bottomColor: ChessColor; bot: IBot | null; id: number },
+    any
+> {
     private boardRef = createRef<HTMLDivElement>();
     private grabbedPiece: IPiece | null = null;
     private grabbedPieceCurrPosition: string = '';
     private gameState: GameState;
     private highlightPositions: string[] = [];
-    private bottomColor = ChessColor.Light;
-
+    private bottomColor: ChessColor;
     private showPawnPromotionLogic = false;
     private pawnPromotionPosition: string | null = null;
     private pawnPromotionCoord: { x: number; y: number } | null = null;
-    private bot = new RandomBot(ChessColor.Dark);
     constructor(props: any) {
         super(props);
         this.handlePromotionSelect = this.handlePromotionSelect.bind(this);
         this.gameState = new GameState();
-        this.bot = new RandomBot(ChessColor.Dark);
-        this.makeTurn = this.makeTurn.bind(this);
-        // setInterval(this.makeTurn, 1000);
+        this.bottomColor = this.props.bottomColor;
+        if (this.props.bot) {
+            this.makeBotTurn = this.makeBotTurn.bind(this);
+            setInterval(this.makeBotTurn, 100);
+        }
     }
 
-    private makeTurn() {
-        if (this.gameState.turn === ChessColor.Dark) {
+    componentDidUpdate(
+        prevProps: Readonly<{
+            bottomColor: ChessColor;
+            bot: IBot | null;
+            id: number;
+        }>,
+        prevState: Readonly<any>,
+        snapshot?: any
+    ): void {
+        if (prevProps.id !== this.props.id) {
+            this.newGame();
+        }
+    }
+
+    private makeBotTurn() {
+        if (
+            this.props.bot &&
+            this.gameState.turn === this.props.bot.turn &&
+            !this.props.bot.isMakingTurn &&
+            !this.noMoreMoves()
+        ) {
             const lastMove = this.gameState.lastMove();
             if (
                 lastMove &&
                 lastMove.type === MoveType.Promote &&
-                lastMove.piece.color === this.bot.turn
+                lastMove.piece.color === this.props.bot.turn
             ) {
                 this.gameState.board.set(lastMove.target, {
                     name: PieceName.Queen,
-                    color: this.bot.turn,
+                    color: this.props.bot.turn,
                 });
                 this.gameState.turn =
                     this.gameState.turn === ChessColor.Dark
                         ? ChessColor.Light
                         : ChessColor.Dark;
             } else {
-                const move = this.bot.getMove(
+                const move = this.props.bot.getMove(
                     this.gameState.board,
                     this.gameState.lastMove()
                 );
@@ -60,6 +83,7 @@ export default class ChessComponent extends React.Component {
                     this.gameState.makeMove(move?.position, move?.target);
                 }
             }
+            this.props.bot.isMakingTurn = false;
             this.forceUpdate();
         }
     }
@@ -107,11 +131,6 @@ export default class ChessComponent extends React.Component {
                     )}
                 </div>
                 <div className="info-container">
-                    <button className="btn" onClick={this.newGame}>
-                        New Game
-                    </button>
-                    <br></br>
-                    <br></br>
                     <button className="btn" onClick={this.toggleBoardColor}>
                         Flip Board
                     </button>
@@ -234,13 +253,25 @@ export default class ChessComponent extends React.Component {
     };
 
     private undoLastMove = () => {
-        this.resetPawnPromotion();
-        this.gameState.takeBack();
-        this.resetPawnPromotion();
+        if (!this.props.bot) {
+            this.takeBack();
+        } else {
+            if (this.gameState.turn !== this.props.bot.turn) {
+                this.takeBack();
+                this.takeBack();
+            }
+        }
+
         this.forceUpdate();
     };
 
-    private newGame = () => {
+    private takeBack = () => {
+        this.resetPawnPromotion();
+        this.gameState.takeBack();
+        this.resetPawnPromotion();
+    };
+
+    newGame = () => {
         this.resetPawnPromotion();
         this.gameState = new GameState();
         this.forceUpdate();
@@ -307,11 +338,17 @@ export default class ChessComponent extends React.Component {
         );
 
     private isGrabbable(element: HTMLElement) {
-        return !this.grabbedPiece && element.classList.contains('chess-piece');
+        const isNotBotTurn =
+            !this.props.bot ||
+            (this.props.bot && this.props.bot.turn !== this.gameState.turn);
+        const pieceIsGrabbable =
+            !this.grabbedPiece && element.classList.contains('chess-piece');
+        return isNotBotTurn && pieceIsGrabbable;
     }
 
     private getPixelSize(): number {
-        const p = Math.min(window.innerWidth, window.innerHeight) / 1000.0;
+        const p = this.boardRef!.current!.clientWidth / 800.0;
+        // const p = Math.min(window.innerWidth, window.innerHeight) / 1000.0;
         return p;
     }
 
