@@ -31,12 +31,12 @@ jobs:
           cache: 'npm'
       - name: npm install
         run: npm install
-      - name: parcel build
+      - name: npm run deploy
         run: npm run deploy
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          publish_dir: ./build
           
       

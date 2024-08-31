@@ -1,5 +1,4 @@
 import { ChessColor, PieceName, MoveType } from '../enums';
-import { GameState } from '../game';
 import { ICastlingRights, IMove } from '../interfaces';
 import { Board } from '../Board';
 

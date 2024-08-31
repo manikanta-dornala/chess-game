@@ -12,7 +12,6 @@ import './chess.css';
 import ScoreComponent from './score/score';
 import NotationsComponent from './notations/notations';
 import AlertsComponent from './alerts/alerts';
-import { RandomBot } from '../../common/bots/random-bot';
 import { IBot } from '../../common/bots/bot';
 
 export default class ChessComponent extends React.Component<
