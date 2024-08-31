@@ -53,41 +53,6 @@ export default class ChessComponent extends React.Component<
         }
     }
 
-    private makeBotTurn() {
-        if (
-            this.props.bot &&
-            this.gameState.turn === this.props.bot.turn &&
-            !this.props.bot.isMakingTurn &&
-            !this.noMoreMoves()
-        ) {
-            const lastMove = this.gameState.lastMove();
-            if (
-                lastMove &&
-                lastMove.type === MoveType.Promote &&
-                lastMove.piece.color === this.props.bot.turn
-            ) {
-                this.gameState.board.set(lastMove.target, {
-                    name: PieceName.Queen,
-                    color: this.props.bot.turn,
-                });
-                this.gameState.turn =
-                    this.gameState.turn === ChessColor.Dark
-                        ? ChessColor.Light
-                        : ChessColor.Dark;
-            } else {
-                const move = this.props.bot.getMove(
-                    this.gameState.board,
-                    this.gameState.lastMove()
-                );
-                if (move) {
-                    this.gameState.makeMove(move?.position, move?.target);
-                }
-            }
-            this.props.bot.isMakingTurn = false;
-            this.forceUpdate();
-        }
-    }
-
     render(): React.ReactNode {
         return (
             <div className="wrapper">
@@ -354,4 +319,39 @@ export default class ChessComponent extends React.Component<
 
     private noMoreMoves = () =>
         MovesHelper.noPieceCanMove(this.gameState.turn, this.gameState.board);
+
+    private makeBotTurn() {
+        if (
+            this.props.bot &&
+            this.gameState.turn === this.props.bot.turn &&
+            !this.props.bot.isMakingTurn &&
+            !this.noMoreMoves()
+        ) {
+            const lastMove = this.gameState.lastMove();
+            if (
+                lastMove &&
+                lastMove.type === MoveType.Promote &&
+                lastMove.piece.color === this.props.bot.turn
+            ) {
+                this.gameState.board.set(lastMove.target, {
+                    name: PieceName.Queen,
+                    color: this.props.bot.turn,
+                });
+                this.gameState.turn =
+                    this.gameState.turn === ChessColor.Dark
+                        ? ChessColor.Light
+                        : ChessColor.Dark;
+            } else {
+                const move = this.props.bot.getMove(
+                    this.gameState.board,
+                    this.gameState.lastMove()
+                );
+                if (move) {
+                    this.gameState.makeMove(move?.position, move?.target);
+                }
+            }
+            this.props.bot.isMakingTurn = false;
+            this.forceUpdate();
+        }
+    }
 }

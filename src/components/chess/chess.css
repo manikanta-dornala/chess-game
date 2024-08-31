@@ -28,6 +28,7 @@
     place-content: center;
     grid-column-start: 1;
     grid-column-end: 4;
+    touch-action: none;
 }
 
 .info-container {
@@ -49,6 +50,7 @@
         height: calc(var(--board-size) * 1.2);
         grid-column-start: 1;
         grid-column-end: 2;
+        touch-action: none;
     }
 
     .info-container {
